@@ -1,7 +1,7 @@
 {
-  "name": "screencrash-editor",
+  "name": "screencrash-studio",
   "version": "0.0.1",
-  "description": "A simple editor for screencrash",
+  "description": "A simple editor/studio for screencrash",
   "license": "MIT",
   "author": {
     "name": "Kulturkrock"

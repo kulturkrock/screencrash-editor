@@ -1,4 +1,4 @@
-# screencrash-editor
+# screencrash-studio
 
 This is based on Electron React Boilerplate. For any mysterious environment bugs, consider searching their docs too (repo [here](https://github.com/electron-react-boilerplate/electron-react-boilerplate)).
 

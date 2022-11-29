@@ -1,8 +1,9 @@
 {
-  "name": "screencrash-editor",
-  "description": "A simple editor for screencrash",
+  "name": "screencrash-studio",
+  "description": "A simple editor/studio for screencrash",
   "keywords": [
     "editor",
+    "studio",
     "screencrash"
   ],
   "homepage": "https://github.com/kulturkrock/screencrash-editor#readme",
@@ -170,8 +171,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "ScreencrashStudio",
+    "appId": "se.kulturkrock.ScreencrashStudio",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
