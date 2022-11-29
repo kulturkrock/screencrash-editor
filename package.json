@@ -1,4 +1,5 @@
 {
+  "name": "screencrash-editor",
   "description": "A simple editor for screencrash",
   "keywords": [
     "editor",

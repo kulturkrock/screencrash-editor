@@ -1,20 +1,35 @@
 import {
-  app,
   Menu,
   shell,
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
-import ActionHandler from './actions';
 
 export default class MenuBuilder {
+  Actions = {
+    NEW: 'new',
+    OPEN: 'open',
+    SAVE: 'save',
+    SAVE_AS: 'save_as',
+    CLOSE: 'close',
+  };
+
+  actionHandlers: { [id: string]: () => Promise<void> } = {};
+
   mainWindow: BrowserWindow;
-  // eslint-disable-next-line @typescript-eslint/lines-between-class-members
-  actionHandler: ActionHandler;
 
   constructor(mainWindow: BrowserWindow) {
     this.mainWindow = mainWindow;
-    this.actionHandler = new ActionHandler(mainWindow);
+  }
+
+  registerActionHandler(action: string, func: () => Promise<void>): void {
+    this.actionHandlers[action] = func;
+  }
+
+  async runAction(action: string): Promise<void> {
+    if (action in this.actionHandlers) {
+      await this.actionHandlers[action]();
+    }
   }
 
   buildMenu(): Menu {
@@ -80,38 +95,28 @@ export default class MenuBuilder {
           {
             label: '&New',
             accelerator: 'Ctrl+N',
-            click: () => {
-              this.actionHandler.newFile();
-            },
+            click: this.runAction.bind(this, this.Actions.NEW),
           },
           {
             label: '&Open',
             accelerator: 'Ctrl+O',
-            click: () => {
-              this.actionHandler.openFile();
-            },
+            click: this.runAction.bind(this, this.Actions.OPEN),
           },
           {
             label: '&Save',
             accelerator: 'Ctrl+S',
-            click: () => {
-              this.actionHandler.saveFile();
-            },
+            click: this.runAction.bind(this, this.Actions.SAVE),
           },
           {
             label: '&Save as',
             accelerator: 'Ctrl+Shift+S',
-            click: () => {
-              this.actionHandler.saveFileAs();
-            },
+            click: this.runAction.bind(this, this.Actions.SAVE_AS),
           },
           { type: 'separator' },
           {
             label: '&Close',
             accelerator: 'Ctrl+W',
-            click: () => {
-              this.mainWindow.close();
-            },
+            click: this.runAction.bind(this, this.Actions.CLOSE),
           },
         ],
       },

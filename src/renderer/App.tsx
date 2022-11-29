@@ -1,9 +1,6 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-
-const Main = () => {
-  return <div className="centered">This is a sample</div>;
-};
+import './styles/App.css';
+import Main from './views/Main';
 
 export default function App() {
   return (
