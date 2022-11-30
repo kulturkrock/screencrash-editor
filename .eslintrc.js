@@ -28,7 +28,5 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
-  overrides: {
-    excludedFiles: ['src/renderer/index.ejs'],
-  },
+  ignorePatterns: ['src/renderer/index.ejs'],
 };
