@@ -14,7 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { getApi, initApiCommunication } from './model/api';
+import { getApi, initApiCommunication } from './api';
 
 class AppUpdater {
   constructor() {

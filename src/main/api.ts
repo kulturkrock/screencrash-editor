@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { dialog, ipcMain } from 'electron';
-import { GET_LOADING_TEXT, OPEN_OPUS } from '../channels';
-import Model from './model';
+import { GET_LOADING_TEXT, OPEN_OPUS } from './channels';
+import Model from './model/model';
 
 interface IApi {
   getLoadingText: () => string;
