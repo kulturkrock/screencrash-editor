@@ -1,0 +1,3 @@
+[submodule "src/main/schemas"]
+	path = src/main/schemas
+	url = https://github.com/kulturkrock/screencrash-schemas.git
