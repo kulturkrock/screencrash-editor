@@ -51,6 +51,33 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+const setupMenu = (): void => {
+  if (mainWindow === null) {
+    return;
+  }
+
+  const api = getApi();
+  const menuBuilder = new MenuBuilder(mainWindow);
+  menuBuilder.setActionHandler(menuBuilder.Actions.OPEN, async () => {
+    await api.openOpus(null);
+  });
+  menuBuilder.setActionHandler(menuBuilder.Actions.CLOSE, async () => {
+    if (mainWindow) {
+      mainWindow.close();
+    }
+  });
+  menuBuilder.setActionHandler(menuBuilder.Actions.SAVE, async () => {
+    await api.saveOpus();
+  });
+  menuBuilder.setActionHandler(menuBuilder.Actions.SAVE_AS, async () => {
+    await api.saveOpusAs(null);
+  });
+  menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE, api.hasOpenedOpus);
+  menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE_AS, api.hasOpenedOpus);
+  menuBuilder.buildMenu();
+  api.listenToUpdates(menuBuilder.updateMenuStates);
+};
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
@@ -94,16 +121,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.registerActionHandler(menuBuilder.Actions.OPEN, async () => {
-    await getApi().openOpus(null);
-  });
-  menuBuilder.registerActionHandler(menuBuilder.Actions.CLOSE, async () => {
-    if (mainWindow) {
-      mainWindow.close();
-    }
-  });
-  menuBuilder.buildMenu();
+  setupMenu();
 
   // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {

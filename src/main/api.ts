@@ -5,12 +5,20 @@ import Model from './model/model';
 
 interface IApi {
   getLoadingText: () => string;
+  listenToUpdates(listener: () => void): void;
+  hasOpenedOpus: () => boolean;
   openOpus: (file: string | null) => Promise<boolean>;
+  saveOpus: () => Promise<boolean>;
+  saveOpusAs: (file: string | null) => Promise<boolean>;
 }
 
 class Api implements IApi {
   constructor() {
     this.getLoadingText = this.getLoadingText.bind(this);
+  }
+
+  listenToUpdates(listener: () => void): void {
+    Model.addListener('updated', listener);
   }
 
   getLoadingText(): string {
@@ -29,11 +37,19 @@ class Api implements IApi {
     return msgs[Math.floor(Math.random() * msgs.length)];
   }
 
+  hasOpenedOpus(): boolean {
+    return Model.hasLoaded();
+  }
+
   async openOpus(file: string | null): Promise<boolean> {
     let fileToOpen = file;
     if (fileToOpen === null) {
       fileToOpen = await dialog
-        .showOpenDialog({ properties: ['openFile'], title: 'Select opus file' })
+        .showOpenDialog({
+          properties: ['openFile'],
+          title: 'Select opus file',
+          filters: [{ name: 'Opus files', extensions: ['yaml'] }],
+        })
         .then((result) => {
           return !result.canceled && result.filePaths.length > 0
             ? result.filePaths[0]
@@ -49,6 +65,42 @@ class Api implements IApi {
       return false;
     }
     return Model.load(fileToOpen);
+  }
+
+  async saveOpus(): Promise<boolean> {
+    if (!Model.hasLoaded()) {
+      return false;
+    }
+    return Model.save(Model.currentFile);
+  }
+
+  async saveOpusAs(file: string | null): Promise<boolean> {
+    if (!Model.hasLoaded()) {
+      return false;
+    }
+
+    let fileToSave = file;
+    if (fileToSave === null) {
+      fileToSave = await dialog
+        .showSaveDialog({
+          properties: ['showOverwriteConfirmation'],
+          title: 'Select save location',
+          filters: [{ name: 'Opus files', extensions: ['yaml'] }],
+          defaultPath: Model.currentFile,
+        })
+        .then((result) => {
+          return !result.canceled && result.filePath ? result.filePath : '';
+        })
+        .catch((err) => {
+          console.log(`Failed to save file: ${err}`);
+          return '';
+        });
+    }
+
+    if (fileToSave === '') {
+      return false;
+    }
+    return Model.save(fileToSave);
   }
 }
 
