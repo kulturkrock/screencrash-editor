@@ -3,20 +3,13 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 body {
-  position: relative;
-  color: white;
-  height: 100vh;
-  background: #7921b1;
-  font-family: sans-serif;
-  overflow-y: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin:0;
 }
 
-div.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px 0;
+#root {
+  height: 100vh;
+  background: #7921b1;
+  color: white;
+  font-family: sans-serif;
+  overflow-y: hidden;
 }

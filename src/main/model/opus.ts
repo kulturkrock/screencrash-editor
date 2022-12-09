@@ -46,6 +46,13 @@ export default class Opus {
     console.log(report);
   }
 
+  findPathByAsset(name: string): string | null {
+    if (name in this.assets) {
+      return this.assets[name].getPath();
+    }
+    return null;
+  }
+
   setNodes(nodes: { [key: string]: OpusNodeData }) {
     Object.keys(nodes).forEach((key) => {
       this.nodes[key] = new OpusNode(key, nodes[key]);

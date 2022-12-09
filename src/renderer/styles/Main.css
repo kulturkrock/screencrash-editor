@@ -1,34 +1,63 @@
 .Main {
-  text-align: center;
-}
-
-.Main-logo {
-  height: 40vmin;
-  pointer-events: none;
-  margin-bottom: 15vmin;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .Main-logo {
-    animation: Main-logo-spin infinite 20s linear;
-  }
-}
-
-.Main-header {
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  height: 100vh;
 }
 
-@keyframes Main-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.MainNoOpus {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5em;
+}
+
+.MainLeft {
+  flex:2;
+  min-width: 200px;
+  border-right-width: 3px;
+  border-right-style: ridge;
+  padding: 1em;
+}
+
+.MainMid {
+  flex: 8;
+  padding: 0em;
+}
+
+.MainTabList {
+  background: rgba(255, 255, 255, 0.2);
+  padding-inline-start: 0;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  padding: 0.5em 1em 0.5em 1em;
+}
+
+.MainTab {
+	display: inline-block;
+  position: relative;
+  list-style: none;
+  padding: 6px 12px 6px 12px;
+  margin-right: 6px;
+  cursor: pointer;
+
+  /* Disable text selection */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+.MainTab:hover {
+  background:rgba(255, 255, 255, 0.5);
+}
+.MainTab-Selected {
+  background: white;
+  color: black;
+  z-index: 3;
+}
+.MainTab-Selected:hover {
+  background: white;
+}
+
+.MainTabPanel-Selected {
+  padding: 0em 1em;
 }

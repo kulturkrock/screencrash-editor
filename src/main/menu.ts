@@ -11,6 +11,7 @@ export default class MenuBuilder {
     OPEN: 'open',
     SAVE: 'save',
     SAVE_AS: 'save_as',
+    UNLOAD: 'unload',
     CLOSE: 'close',
   };
 
@@ -135,6 +136,12 @@ export default class MenuBuilder {
             label: '&Save as',
             accelerator: 'Ctrl+Shift+S',
             click: this.runAction.bind(this, this.Actions.SAVE_AS),
+          },
+          { type: 'separator' },
+          {
+            id: this.Actions.UNLOAD,
+            label: '&Unload',
+            click: this.runAction.bind(this, this.Actions.UNLOAD),
           },
           { type: 'separator' },
           {

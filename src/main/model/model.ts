@@ -6,7 +6,7 @@ interface IModel extends EventEmitter {
   hasLoaded: () => boolean;
   load: (file: string) => boolean;
   save: (file: string) => boolean;
-  unload: () => void;
+  unload: () => boolean;
 }
 
 class Model extends EventEmitter implements IModel {
@@ -18,8 +18,16 @@ class Model extends EventEmitter implements IModel {
     this.currentFile = '';
   }
 
+  emitLoadEvent(): void {
+    this.emit('loaded', this.hasLoaded());
+  }
+
   emitUpdatedEvent(): void {
     this.emit('updated');
+  }
+
+  getOpus(): Opus | null {
+    return this.opus;
   }
 
   hasLoaded(): boolean {
@@ -33,6 +41,7 @@ class Model extends EventEmitter implements IModel {
       console.log(
         `Loaded ${file} with ${Object.keys(this.opus.nodes).length} nodes`
       );
+      this.emitLoadEvent();
       this.emitUpdatedEvent();
       return true;
     } catch (e) {
@@ -55,9 +64,11 @@ class Model extends EventEmitter implements IModel {
     }
   }
 
-  unload(): void {
+  unload(): boolean {
     this.currentFile = '';
+    this.emitLoadEvent();
     this.emitUpdatedEvent();
+    return true;
   }
 }
 

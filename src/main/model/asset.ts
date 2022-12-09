@@ -13,6 +13,10 @@ export class Asset implements NamedSaveable {
     this.data = data;
   }
 
+  getPath(): string {
+    return this.data.path;
+  }
+
   toData(): [string, AssetData] {
     return [this.name, this.data];
   }

@@ -1,7 +1,18 @@
 /* eslint-disable class-methods-use-this */
-import { dialog, ipcMain } from 'electron';
-import { GET_LOADING_TEXT, OPEN_OPUS } from './channels';
+import { BrowserWindow, dialog, ipcMain } from 'electron';
+import {
+  Channels,
+  GET_ACTIONS,
+  GET_ASSETS,
+  GET_LOADING_TEXT,
+  GET_NODES,
+  LOADED_CHANGED,
+  OPEN_OPUS,
+} from './channels';
+import { ActionTemplate } from './model/action';
+import { Asset } from './model/asset';
 import Model from './model/model';
+import { OpusNode } from './model/node';
 
 interface IApi {
   getLoadingText: () => string;
@@ -10,6 +21,11 @@ interface IApi {
   openOpus: (file: string | null) => Promise<boolean>;
   saveOpus: () => Promise<boolean>;
   saveOpusAs: (file: string | null) => Promise<boolean>;
+  unloadOpus: () => Promise<boolean>;
+
+  getNodes: () => OpusNode[];
+  getActions: () => ActionTemplate[];
+  getAssets: () => Asset[];
 }
 
 class Api implements IApi {
@@ -67,6 +83,11 @@ class Api implements IApi {
     return Model.load(fileToOpen);
   }
 
+  async unloadOpus(): Promise<boolean> {
+    // TODO: Check for changes first
+    return Model.unload();
+  }
+
   async saveOpus(): Promise<boolean> {
     if (!Model.hasLoaded()) {
       return false;
@@ -102,6 +123,24 @@ class Api implements IApi {
     }
     return Model.save(fileToSave);
   }
+
+  getNodes(): OpusNode[] {
+    const opus = Model.getOpus();
+    if (opus) return Object.values(opus.nodes);
+    return [];
+  }
+
+  getActions(): ActionTemplate[] {
+    const opus = Model.getOpus();
+    if (opus) return Object.values(opus.actionTemplates);
+    return [];
+  }
+
+  getAssets(): Asset[] {
+    const opus = Model.getOpus();
+    if (opus) return Object.values(opus.assets);
+    return [];
+  }
 }
 
 const CURRENT_API = new Api();
@@ -109,16 +148,28 @@ const getApi = (): IApi => {
   return CURRENT_API;
 };
 
-const initApiCommunication = (): void => {
-  ipcMain.on(GET_LOADING_TEXT, async (event) => {
-    const msg = CURRENT_API.getLoadingText();
-    event.reply(GET_LOADING_TEXT, msg);
+const addSimpleGetter = (channel: Channels, func: () => unknown): void => {
+  ipcMain.on(channel, async (event) => {
+    event.reply(channel, func());
   });
+};
+
+const initApiCommunication = (mainWindow: BrowserWindow): void => {
+  addSimpleGetter(GET_LOADING_TEXT, CURRENT_API.getLoadingText);
+  addSimpleGetter(GET_NODES, CURRENT_API.getNodes);
+  addSimpleGetter(GET_ACTIONS, CURRENT_API.getActions);
+  addSimpleGetter(GET_ASSETS, CURRENT_API.getAssets);
 
   ipcMain.on(OPEN_OPUS, async (event, args) => {
     const file = args.length > 0 ? args[0] : null;
     const success = await CURRENT_API.openOpus(file);
     event.reply(OPEN_OPUS, success);
+  });
+
+  Model.addListener('loaded', (...args: unknown[]) => {
+    if (args.length === 1) {
+      mainWindow.webContents.send(LOADED_CHANGED, args[0]);
+    }
   });
 };
 

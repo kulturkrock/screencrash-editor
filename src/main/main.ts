@@ -61,19 +61,21 @@ const setupMenu = (): void => {
   menuBuilder.setActionHandler(menuBuilder.Actions.OPEN, async () => {
     await api.openOpus(null);
   });
-  menuBuilder.setActionHandler(menuBuilder.Actions.CLOSE, async () => {
-    if (mainWindow) {
-      mainWindow.close();
-    }
-  });
   menuBuilder.setActionHandler(menuBuilder.Actions.SAVE, async () => {
     await api.saveOpus();
   });
   menuBuilder.setActionHandler(menuBuilder.Actions.SAVE_AS, async () => {
     await api.saveOpusAs(null);
   });
+  menuBuilder.setActionHandler(menuBuilder.Actions.UNLOAD, async () => {
+    await api.unloadOpus();
+  });
+  menuBuilder.setActionHandler(menuBuilder.Actions.CLOSE, async () => {
+    if (mainWindow) mainWindow.close();
+  });
   menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE, api.hasOpenedOpus);
   menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE_AS, api.hasOpenedOpus);
+  menuBuilder.setEnabledHandler(menuBuilder.Actions.UNLOAD, api.hasOpenedOpus);
   menuBuilder.buildMenu();
   api.listenToUpdates(menuBuilder.updateMenuStates);
 };
@@ -102,7 +104,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-  initApiCommunication();
+  initApiCommunication(mainWindow);
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 

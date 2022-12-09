@@ -1,10 +1,17 @@
 import { NamedSaveable } from './common';
 
-export interface ActionData {
+interface SingleAction {
   target: string;
   desc: string;
   cmd?: string;
 }
+
+interface ParameterAction {
+  parameters: { [parameter: string]: string[] }; // Parameter name -> JSON paths
+  actions: (string | SingleAction)[];
+}
+
+export type ActionData = SingleAction | SingleAction[] | ParameterAction;
 
 export class ActionTemplate implements NamedSaveable {
   name: string;

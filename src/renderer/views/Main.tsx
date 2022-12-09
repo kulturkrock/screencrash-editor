@@ -1,47 +1,67 @@
 import * as React from 'react';
 
-import logo from '../../../assets/icon.png';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
 import '../styles/Main.css';
 import { IEmpty } from '../util/types';
 import { getApi } from '../util/backend';
+import Nodes from './Nodes';
+import Actions from './Actions';
+import Assets from './Assets';
 
 interface IState {
-  loadingText: string;
+  isLoaded: boolean;
 }
 
 class Main extends React.PureComponent<IEmpty, IState> {
-  timerId: number = 0;
-
   constructor(props: IEmpty) {
     super(props);
-    this.state = { loadingText: 'Content coming soon' };
-    this.updateLoadingText = this.updateLoadingText.bind(this);
+    this.state = { isLoaded: false };
   }
 
   componentDidMount(): void {
-    this.updateLoadingText();
-    this.timerId = window.setInterval(this.updateLoadingText, 5000);
+    getApi().addLoadListener((loaded: boolean) => {
+      this.setState({ isLoaded: loaded });
+    });
   }
 
-  componentWillUnmount(): void {
-    clearInterval(this.timerId);
-  }
-
-  updateLoadingText(): void {
-    getApi()
-      .getLoadingText()
-      .then((text: string): void => this.setState({ loadingText: text }))
-      .catch(console.log);
-  }
+  componentWillUnmount(): void {}
 
   render(): JSX.Element {
-    const { loadingText } = this.state;
+    const { isLoaded } = this.state;
+    if (!isLoaded) {
+      return <div className="MainNoOpus">Load or create an opus to start</div>;
+    }
+
     return (
       <div className="Main">
-        <header className="Main-header">
-          <img src={logo} className="Main-logo" alt="logo" />
-          {loadingText}
-        </header>
+        <div className="MainLeft">LEFT</div>
+        <div className="MainMid">
+          <Tabs
+            selectedTabClassName="MainTab-Selected"
+            selectedTabPanelClassName="MainTabPanel-Selected"
+            focusTabOnClick={false}
+          >
+            <TabList className="MainTabList">
+              <Tab className="MainTab">Nodes</Tab>
+              <Tab className="MainTab">Actions</Tab>
+              <Tab className="MainTab">Assets</Tab>
+              <Tab className="MainTab">Live utility</Tab>
+            </TabList>
+            <TabPanel>
+              <Nodes />
+            </TabPanel>
+            <TabPanel>
+              <Actions />
+            </TabPanel>
+            <TabPanel>
+              <Assets />
+            </TabPanel>
+            <TabPanel>
+              <h2>Utilities here</h2>
+            </TabPanel>
+          </Tabs>
+        </div>
       </div>
     );
   }
