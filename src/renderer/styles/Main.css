@@ -59,5 +59,16 @@
 }
 
 .MainTabPanel-Selected {
-  padding: 0em 1em;
+  overflow-y: hidden;
+}
+
+/* Hack to get scrolling to work properly */
+.react-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.react-tabs__tab-panel:not(.MainTabPanel-Selected) {
+  display: none;
 }

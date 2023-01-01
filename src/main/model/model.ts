@@ -16,6 +16,7 @@ class Model extends EventEmitter implements IModel {
   constructor() {
     super();
     this.currentFile = '';
+    this.onOpusChangeEvent = this.onOpusChangeEvent.bind(this);
   }
 
   emitLoadEvent(): void {
@@ -24,6 +25,13 @@ class Model extends EventEmitter implements IModel {
 
   emitUpdatedEvent(): void {
     this.emit('updated');
+  }
+
+  onOpusChangeEvent(...args: unknown[]) {
+    if (args.length === 1) {
+      const changeType = args[0] as string;
+      this.emit(`changed_${changeType}`);
+    }
   }
 
   getOpus(): Opus | null {
@@ -38,6 +46,7 @@ class Model extends EventEmitter implements IModel {
     this.currentFile = file;
     try {
       this.opus = new Opus(file);
+      this.opus.addListener('changed', this.onOpusChangeEvent);
       console.log(
         `Loaded ${file} with ${Object.keys(this.opus.nodes).length} nodes`
       );

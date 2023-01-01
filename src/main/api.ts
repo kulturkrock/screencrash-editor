@@ -7,12 +7,15 @@ import {
   GET_LOADING_TEXT,
   GET_NODES,
   LOADED_CHANGED,
+  NODES_CHANGED,
   OPEN_OPUS,
+  SHOW_DIALOG,
+  UPDATE_NODE,
 } from './channels';
 import { ActionTemplate } from './model/action';
 import { Asset } from './model/asset';
 import Model from './model/model';
-import { OpusNode } from './model/node';
+import { OpusNode, OpusNodeData } from './model/node';
 
 interface IApi {
   getLoadingText: () => string;
@@ -26,6 +29,8 @@ interface IApi {
   getNodes: () => OpusNode[];
   getActions: () => ActionTemplate[];
   getAssets: () => Asset[];
+
+  updateNode: (name: string, data: OpusNodeData) => boolean;
 }
 
 class Api implements IApi {
@@ -141,6 +146,12 @@ class Api implements IApi {
     if (opus) return Object.values(opus.assets);
     return [];
   }
+
+  updateNode(name: string, data: OpusNodeData): boolean {
+    const opus = Model.getOpus();
+    if (opus) return opus.updateNode(name, data);
+    return false;
+  }
 }
 
 const CURRENT_API = new Api();
@@ -152,6 +163,20 @@ const addSimpleGetter = (channel: Channels, func: () => unknown): void => {
   ipcMain.on(channel, async (event) => {
     event.reply(channel, func());
   });
+};
+
+const showOKDialog = (
+  win: BrowserWindow,
+  type: string,
+  title: string,
+  message: string
+): void => {
+  let actualType = type;
+  if (!['none', 'info', 'error', 'question', 'warning'].includes(type)) {
+    // Default to info for unknown types
+    actualType = 'info';
+  }
+  dialog.showMessageBoxSync(win, { type: actualType, title, message });
 };
 
 const initApiCommunication = (mainWindow: BrowserWindow): void => {
@@ -166,10 +191,30 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     event.reply(OPEN_OPUS, success);
   });
 
+  ipcMain.on(UPDATE_NODE, (event, args) => {
+    if (args.length !== 2) event.reply(UPDATE_NODE, false);
+    const name = args[0] as string;
+    const data = args[1] as OpusNodeData;
+    const success = CURRENT_API.updateNode(name, data);
+    event.reply(UPDATE_NODE, success);
+  });
+
+  ipcMain.on(SHOW_DIALOG, async (event, args) => {
+    if (args.length !== 3) event.reply(SHOW_DIALOG, false);
+    const type = args[0] as string;
+    const title = args[1] as string;
+    const message = args[2] as string;
+    showOKDialog(mainWindow, type, title, message);
+    event.reply(SHOW_DIALOG, true);
+  });
+
   Model.addListener('loaded', (...args: unknown[]) => {
     if (args.length === 1) {
       mainWindow.webContents.send(LOADED_CHANGED, args[0]);
     }
+  });
+  Model.addListener('changed_nodes', () => {
+    mainWindow.webContents.send(NODES_CHANGED);
   });
 };
 

@@ -1,5 +1,6 @@
 import { parse, stringify } from 'yaml';
 import * as fs from 'fs';
+import { EventEmitter } from 'stream';
 import { ActionData, ActionTemplate } from './action';
 import { AssetData, Asset } from './asset';
 import { UIConfigData, UIConfig } from './ui';
@@ -16,7 +17,8 @@ function toUnnamedData(data: UnnamedSaveable[]): unknown {
 }
 */
 
-export default class Opus {
+export default class Opus extends EventEmitter {
+  inhibitEmits: boolean = false;
   nodes: { [key: string]: OpusNode } = {};
   startNode: string = '';
   actionTemplates: { [key: string]: ActionTemplate } = {};
@@ -24,6 +26,8 @@ export default class Opus {
   ui: UIConfig | null = null;
 
   constructor(path: string) {
+    super();
+    this.inhibitEmits = true;
     const rawData = fs.readFileSync(path, 'utf-8');
     const data = parse(rawData);
     this.setNodes(data.nodes);
@@ -31,8 +35,15 @@ export default class Opus {
     this.setActionTemplates(data.action_templates);
     this.setAssets(data.assets);
     this.setUIProperties(data.ui);
+    this.inhibitEmits = false;
 
     this.printReport();
+  }
+
+  emitChangeEvent(type: string) {
+    if (!this.inhibitEmits) {
+      this.emit('changed', type);
+    }
   }
 
   printReport() {
@@ -55,7 +66,7 @@ export default class Opus {
 
   setNodes(nodes: { [key: string]: OpusNodeData }) {
     Object.keys(nodes).forEach((key) => {
-      this.nodes[key] = new OpusNode(key, nodes[key]);
+      this.updateNode(key, nodes[key]);
     });
   }
 
@@ -77,6 +88,14 @@ export default class Opus {
 
   setUIProperties(uiProperties: UIConfigData | null) {
     this.ui = new UIConfig(uiProperties);
+  }
+
+  updateNode(name: string, data: OpusNodeData): boolean {
+    console.log(`Setting data of node ${name}`);
+    console.log(JSON.stringify(data));
+    this.emitChangeEvent('nodes');
+    this.nodes[name] = new OpusNode(name, data);
+    return true;
   }
 
   save(path: string): void {

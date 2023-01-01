@@ -40,6 +40,7 @@ class Main extends React.PureComponent<IEmpty, IState> {
           <Tabs
             selectedTabClassName="MainTab-Selected"
             selectedTabPanelClassName="MainTabPanel-Selected"
+            forceRenderTabPanel
             focusTabOnClick={false}
           >
             <TabList className="MainTabList">

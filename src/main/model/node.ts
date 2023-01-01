@@ -6,9 +6,9 @@ interface ParameterizedAction {
   parameters: string;
 }
 
-type InlineAction = string | ActionData | ParameterizedAction;
+export type InlineAction = string | ActionData | ParameterizedAction;
 
-interface MultiJumpNode {
+export interface MultiJumpNode {
   node: string;
   description: string;
   actions: InlineAction[];

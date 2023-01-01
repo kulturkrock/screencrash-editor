@@ -4,12 +4,49 @@
  */
 body {
   margin:0;
+  box-sizing: border-box;
 }
 
 #root {
   height: 100vh;
   background: #7921b1;
   color: white;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-y: hidden;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #4b1658;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #611874;
+}
+
+input[type=text], input[type=number], input[type=password] {
+  padding: 0.5em 1em;
+}
+
+select, option {
+  padding: 0.5em 0.5em;
+}
+
+.EditField {
+  margin-bottom: 1em;
+}
+.FieldDescription {
+  cursor: default;
+  margin-bottom: 0.3em;
 }
