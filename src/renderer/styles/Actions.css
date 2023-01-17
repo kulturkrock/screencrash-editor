@@ -1,0 +1,46 @@
+.Actions {
+  display: flex;
+  height: 100%;
+}
+
+.ActionList {
+  overflow-y:auto;
+  padding: 1em;
+  flex: 1;
+}
+
+.Action {
+  padding: 0.5em 1em;
+  margin-bottom: 0.5em;
+  border: 1px solid white;
+
+  /* Disable text selection */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+.Action.odd {
+  background: #7f27b6;
+}
+.Action.even {
+  background: #661b94;
+}
+.Action:hover{
+  cursor: pointer;
+}
+.Action:not(.selected):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.ActionList.ActiveSelection .Action {
+  opacity: 0.4;
+}
+.ActionList.ActiveSelection .Action.selected {
+  opacity: 1;
+}
+
+.ActionsEditor {
+  flex: 1;
+  padding: 1em;
+  overflow-y:auto;
+}

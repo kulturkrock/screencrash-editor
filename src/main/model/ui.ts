@@ -30,7 +30,16 @@ export class UIConfig implements UnnamedSaveable {
     return this.data.shortcuts ? this.data.shortcuts : [];
   }
 
-  toData(): UIConfigData {
+  static parseRawData(data: unknown): UIConfigData {
+    return data as UIConfigData;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  canBeSaved(): boolean {
+    return true;
+  }
+
+  toSaveData(): unknown {
     return this.data;
   }
 }

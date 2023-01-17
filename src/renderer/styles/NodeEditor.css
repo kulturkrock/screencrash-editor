@@ -1,3 +1,7 @@
-input[type=text] {
+input[type=text].wide {
   width: 500px;
+}
+
+.ActionPicker span {
+  margin-left: 1em;
 }

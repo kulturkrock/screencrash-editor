@@ -1,7 +1,9 @@
 export interface NamedSaveable {
-  toData(): [key: string, data: unknown];
+  canBeSaved(): boolean;
+  toSaveData(): [key: string, data: unknown];
 }
 
 export interface UnnamedSaveable {
-  toData(): unknown;
+  canBeSaved(): boolean;
+  toSaveData(): unknown;
 }

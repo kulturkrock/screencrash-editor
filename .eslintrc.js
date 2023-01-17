@@ -12,6 +12,7 @@ module.exports = {
       'always',
       { exceptAfterSingleLine: true },
     ],
+    'no-underscore-dangle': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

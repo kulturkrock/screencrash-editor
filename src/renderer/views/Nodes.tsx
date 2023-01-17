@@ -13,6 +13,8 @@ interface IState {
 }
 
 class Nodes extends React.PureComponent<IEmpty, IState> {
+  _unregisterUpdates: (() => void) | undefined;
+
   constructor(props: IEmpty) {
     super(props);
     this.state = { nodes: [], selectedNodeIndex: -1 };
@@ -21,10 +23,17 @@ class Nodes extends React.PureComponent<IEmpty, IState> {
 
   componentDidMount(): void {
     this.updateNodes();
-    getApi().addChangeListener(ChangeType.Nodes, this.updateNodes);
+    this._unregisterUpdates = getApi().addChangeListener(
+      ChangeType.Nodes,
+      this.updateNodes
+    );
   }
 
-  componentWillUnmount(): void {}
+  componentWillUnmount(): void {
+    if (this._unregisterUpdates) {
+      this._unregisterUpdates();
+    }
+  }
 
   updateNodes(): void {
     getApi()

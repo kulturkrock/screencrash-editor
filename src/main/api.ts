@@ -1,21 +1,29 @@
 /* eslint-disable class-methods-use-this */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import {
+  ACTIONS_CHANGED,
+  ASSETS_CHANGED,
   Channels,
   GET_ACTIONS,
+  GET_ACTION_DESCRIPTIONS,
   GET_ASSETS,
   GET_LOADING_TEXT,
   GET_NODES,
+  LIST_COMMANDS,
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
+  RELOAD_COMMANDS,
   SHOW_DIALOG,
+  UPDATE_ACTION,
   UPDATE_NODE,
 } from './channels';
-import { ActionTemplate } from './model/action';
+import { Action, ActionData } from './model/action';
 import { Asset } from './model/asset';
+import { getAvailableCommands, reloadCommands } from './model/commands';
 import Model from './model/model';
 import { OpusNode, OpusNodeData } from './model/node';
+import { getPrettyActionDescription } from './model/util';
 
 interface IApi {
   getLoadingText: () => string;
@@ -27,10 +35,18 @@ interface IApi {
   unloadOpus: () => Promise<boolean>;
 
   getNodes: () => OpusNode[];
-  getActions: () => ActionTemplate[];
+  getActions: () => Action[];
+  getActionDescriptions: () => { [name: string]: string };
   getAssets: () => Asset[];
 
-  updateNode: (name: string, data: OpusNodeData) => boolean;
+  reloadCommands: () => void;
+
+  updateNode: (name: string | null, data: OpusNodeData) => string;
+  updateAction: (
+    name: string | null,
+    data: ActionData,
+    useInline: boolean
+  ) => string;
 }
 
 class Api implements IApi {
@@ -135,10 +151,23 @@ class Api implements IApi {
     return [];
   }
 
-  getActions(): ActionTemplate[] {
+  getActions(): Action[] {
     const opus = Model.getOpus();
-    if (opus) return Object.values(opus.actionTemplates);
+    if (opus) return Object.values(opus.actions);
     return [];
+  }
+
+  getActionDescriptions(): { [name: string]: string } {
+    const opus = Model.getOpus();
+    if (opus)
+      return Object.keys(opus.actions).reduce((result, key) => {
+        result[key] = getPrettyActionDescription(
+          opus.actions[key],
+          opus.assets
+        );
+        return result;
+      }, {});
+    return {};
   }
 
   getAssets(): Asset[] {
@@ -147,10 +176,26 @@ class Api implements IApi {
     return [];
   }
 
-  updateNode(name: string, data: OpusNodeData): boolean {
+  reloadCommands(): void {
+    // Call on function in commands.ts
+    // (that happens to be called the same)
+    reloadCommands();
+  }
+
+  updateNode(name: string | null, data: OpusNodeData): string {
     const opus = Model.getOpus();
     if (opus) return opus.updateNode(name, data);
-    return false;
+    return '';
+  }
+
+  updateAction(
+    name: string | null,
+    data: ActionData,
+    useInline: boolean
+  ): string {
+    const opus = Model.getOpus();
+    if (opus) return opus.updateAction(name, useInline, data);
+    return '';
   }
 }
 
@@ -183,6 +228,7 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
   addSimpleGetter(GET_LOADING_TEXT, CURRENT_API.getLoadingText);
   addSimpleGetter(GET_NODES, CURRENT_API.getNodes);
   addSimpleGetter(GET_ACTIONS, CURRENT_API.getActions);
+  addSimpleGetter(GET_ACTION_DESCRIPTIONS, CURRENT_API.getActionDescriptions);
   addSimpleGetter(GET_ASSETS, CURRENT_API.getAssets);
 
   ipcMain.on(OPEN_OPUS, async (event, args) => {
@@ -192,15 +238,44 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
   });
 
   ipcMain.on(UPDATE_NODE, (event, args) => {
-    if (args.length !== 2) event.reply(UPDATE_NODE, false);
-    const name = args[0] as string;
+    if (args.length !== 2) {
+      console.log(`Got ${args.length} arguments, expected 2`);
+      event.reply(UPDATE_NODE, '');
+      return;
+    }
+    const name = args[0] as string | null;
     const data = args[1] as OpusNodeData;
-    const success = CURRENT_API.updateNode(name, data);
-    event.reply(UPDATE_NODE, success);
+    const result = CURRENT_API.updateNode(name, data);
+    event.reply(UPDATE_NODE, result);
+  });
+
+  ipcMain.on(UPDATE_ACTION, (event, args) => {
+    if (args.length < 2) {
+      console.log(`Got ${args.length} arguments, expected at least 2`);
+      event.reply(UPDATE_ACTION, '');
+      return;
+    }
+    const name = args[0] as string | null;
+    const data = args[1] as ActionData;
+    const useInline = args.length > 2 ? (args[2] as boolean) : false;
+    const result = CURRENT_API.updateAction(name, data, useInline);
+    event.reply(UPDATE_ACTION, result);
+  });
+
+  ipcMain.on(LIST_COMMANDS, (event) => {
+    const cmds = getAvailableCommands();
+    event.reply(LIST_COMMANDS, cmds);
+  });
+
+  ipcMain.on(RELOAD_COMMANDS, () => {
+    reloadCommands();
   });
 
   ipcMain.on(SHOW_DIALOG, async (event, args) => {
-    if (args.length !== 3) event.reply(SHOW_DIALOG, false);
+    if (args.length !== 3) {
+      event.reply(SHOW_DIALOG, false);
+      return;
+    }
     const type = args[0] as string;
     const title = args[1] as string;
     const message = args[2] as string;
@@ -216,6 +291,17 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
   Model.addListener('changed_nodes', () => {
     mainWindow.webContents.send(NODES_CHANGED);
   });
+  Model.addListener('changed_assets', () => {
+    mainWindow.webContents.send(ASSETS_CHANGED);
+  });
+  Model.addListener('changed_actions', () => {
+    mainWindow.webContents.send(ACTIONS_CHANGED);
+  });
 };
 
-export { getApi, initApiCommunication };
+const initApi = (mainWindow: BrowserWindow): void => {
+  initApiCommunication(mainWindow);
+  reloadCommands();
+};
+
+export { getApi, initApi };

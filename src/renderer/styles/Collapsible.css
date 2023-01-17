@@ -1,0 +1,18 @@
+input[type=text].wide {
+  width: 500px;
+}
+
+.ToggleHeader {
+  display: flex;
+  align-items: baseline;
+}
+.ToggleHeader:hover {
+  cursor: pointer;
+}
+.ToggleHeader h3 {
+  margin-right: 0.5em;
+}
+
+.ToggleBody.Hidden {
+  display: none;
+}

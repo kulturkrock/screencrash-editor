@@ -9,12 +9,12 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, dialog, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { getApi, initApiCommunication } from './api';
+import { getApi, initApi } from './api';
 
 class AppUpdater {
   constructor() {
@@ -73,6 +73,16 @@ const setupMenu = (): void => {
   menuBuilder.setActionHandler(menuBuilder.Actions.CLOSE, async () => {
     if (mainWindow) mainWindow.close();
   });
+  menuBuilder.setActionHandler(menuBuilder.Actions.RELOAD_CMDS, async () => {
+    api.reloadCommands();
+    if (mainWindow) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'Reloaded commands',
+        message: 'The commands was successfully reloaded',
+      });
+    }
+  });
   menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE, api.hasOpenedOpus);
   menuBuilder.setEnabledHandler(menuBuilder.Actions.SAVE_AS, api.hasOpenedOpus);
   menuBuilder.setEnabledHandler(menuBuilder.Actions.UNLOAD, api.hasOpenedOpus);
@@ -95,8 +105,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1920,
+    height: 1080,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -104,7 +114,8 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-  initApiCommunication(mainWindow);
+  mainWindow.maximize();
+  initApi(mainWindow);
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 

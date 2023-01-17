@@ -13,6 +13,7 @@ export default class MenuBuilder {
     SAVE_AS: 'save_as',
     UNLOAD: 'unload',
     CLOSE: 'close',
+    RELOAD_CMDS: 'reload_commands',
   };
 
   actionHandlers: { [id: string]: () => Promise<void> } = {};
@@ -193,6 +194,17 @@ export default class MenuBuilder {
                   },
                 },
               ],
+      },
+      {
+        label: '&Tools',
+        submenu: [
+          {
+            id: this.Actions.CLOSE,
+            label: '&Reload commands',
+            accelerator: 'Ctrl+E',
+            click: this.runAction.bind(this, this.Actions.RELOAD_CMDS),
+          },
+        ],
       },
       {
         label: 'Help',

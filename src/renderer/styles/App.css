@@ -15,6 +15,7 @@ body {
   overflow-y: hidden;
 }
 
+
 /* width */
 ::-webkit-scrollbar {
   width: 5px;
@@ -49,4 +50,48 @@ select, option {
 .FieldDescription {
   cursor: default;
   margin-bottom: 0.3em;
+}
+
+
+/* Helpful app-wide classes */
+.Unselectable {
+  /* Disable text selection */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+.FlexButton {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em;
+}
+
+
+.EditorHeader {
+  display: flex;
+  align-items: center;
+}
+.EditorHeader h3 {
+  flex: 1;
+}
+.EditorHeader button {
+  height: 2em;
+  margin-left: 0.5em;
+  border: 1px solid darkgray;
+}
+.EditorHeader button:hover {
+  cursor: pointer;
+}
+.EditorHeader button:disabled {
+  opacity: 0.2;
+}
+.EditorHeader button.Apply {
+  background: forestgreen;
+  color: white;
+}
+.EditorHeader button.Abort {
+  background: darkred;
+  color: white;
 }

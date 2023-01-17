@@ -1,35 +1,59 @@
 import {
+  ACTIONS_CHANGED,
+  ASSETS_CHANGED,
   Channels,
   GET_ACTIONS,
+  GET_ACTION_DESCRIPTIONS,
   GET_ASSETS,
   GET_LOADING_TEXT,
   GET_NODES,
+  LIST_COMMANDS,
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
   SHOW_DIALOG,
+  UPDATE_ACTION,
   UPDATE_NODE,
 } from '../../main/channels';
 
+import { Action, ActionData } from '../../main/model/action';
+import { Asset } from '../../main/model/asset';
+import { ICommand } from '../../main/model/commands';
 import { OpusNode, OpusNodeData } from '../../main/model/node';
 
 export enum ChangeType {
   Nodes,
+  Assets,
+  Actions,
 }
 const changeTypeToChannel: { [change_type in ChangeType]: Channels } = {
   [ChangeType.Nodes]: NODES_CHANGED,
+  [ChangeType.Assets]: ASSETS_CHANGED,
+  [ChangeType.Actions]: ACTIONS_CHANGED,
 };
 
 interface IApi {
   getLoadingText: () => Promise<string>;
-  addLoadListener(func: (loaded: boolean) => void): void;
-  addChangeListener(expected_type: ChangeType, func: () => void): void;
+  addLoadListener(func: (loaded: boolean) => void): () => void;
+  addChangeListener(expected_type: ChangeType, func: () => void): () => void;
 
   openOpus: () => Promise<boolean>;
   getNodes: () => Promise<OpusNode[]>;
-  getActions: () => Promise<unknown[]>;
-  getAssets: () => Promise<unknown[]>;
-  updateNode: (name: string, data: OpusNodeData) => Promise<boolean>;
+  getActions: () => Promise<Action[]>;
+  getActionDescriptions: () => Promise<{ [name: string]: string }>;
+  getAssets: () => Promise<Asset[]>;
+
+  createNode: () => Promise<string>;
+  createAction: () => Promise<string>;
+
+  updateNode: (name: string | null, data: OpusNodeData) => Promise<string>;
+  updateAction: (
+    name: string | null,
+    data: ActionData,
+    useInline: boolean
+  ) => Promise<string>;
+
+  getAvailableCommands: () => Promise<{ [component: string]: ICommand[] }>;
 
   showInfoMessage: (title: string, message: string) => Promise<boolean>;
   showWarningMessage: (title: string, message: string) => Promise<boolean>;
@@ -57,18 +81,18 @@ class Api implements IApi {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  addLoadListener(func: (loaded: boolean) => void): void {
-    window.electron.ipcRenderer.on(LOADED_CHANGED, (...args: unknown[]) => {
-      if (args.length === 1) func(args[0] as boolean);
-    });
+  addLoadListener(func: (loaded: boolean) => void): () => void {
+    return (
+      window.electron.ipcRenderer.on(LOADED_CHANGED, (...args: unknown[]) => {
+        if (args.length === 1) func(args[0] as boolean);
+      }) || (() => {})
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
-  addChangeListener(expected_type: ChangeType, func: () => void): void {
+  addChangeListener(expected_type: ChangeType, func: () => void): () => void {
     const channel = changeTypeToChannel[expected_type];
-    window.electron.ipcRenderer.on(channel, () => {
-      func();
-    });
+    return window.electron.ipcRenderer.on(channel, func) || (() => {});
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -84,21 +108,54 @@ class Api implements IApi {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async getActions(): Promise<unknown[]> {
+  async getActions(): Promise<Action[]> {
     const args = await callIpc(GET_ACTIONS, null);
-    return args[0] as unknown[];
+    return args[0] as Action[];
+  }
+
+  async getActionDescriptions(): Promise<{ [name: string]: string }> {
+    const args = await callIpc(GET_ACTION_DESCRIPTIONS);
+    return args[0] as { [name: string]: string };
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async getAssets(): Promise<unknown[]> {
+  async getAssets(): Promise<Asset[]> {
     const args = await callIpc(GET_ASSETS, null);
-    return args[0] as unknown[];
+    return args[0] as Asset[];
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async updateNode(name: string, data: OpusNodeData): Promise<boolean> {
+  async createNode(): Promise<string> {
+    const nodeData = OpusNode.getEmptyNodeData();
+    return this.updateNode(null, nodeData);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async createAction(): Promise<string> {
+    const actionData = Action.getEmptyActionData();
+    return this.updateAction(null, actionData, false);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateNode(name: string | null, data: OpusNodeData): Promise<string> {
     const args = await callIpc(UPDATE_NODE, name, data);
-    return args[0] as boolean;
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateAction(
+    name: string | null,
+    data: ActionData,
+    useInline: boolean
+  ): Promise<string> {
+    const args = await callIpc(UPDATE_ACTION, name, data, useInline);
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async getAvailableCommands(): Promise<{ [component: string]: ICommand[] }> {
+    const args = await callIpc(LIST_COMMANDS);
+    return args[0] as { [component: string]: ICommand[] };
   }
 
   // eslint-disable-next-line class-methods-use-this

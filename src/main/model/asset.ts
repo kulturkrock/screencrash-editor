@@ -6,10 +6,12 @@ export interface AssetData {
 
 export class Asset implements NamedSaveable {
   name: string = '';
+  isInline: boolean;
   data: AssetData;
 
-  constructor(name: string, data: AssetData) {
+  constructor(name: string, isInline: boolean, data: AssetData) {
     this.name = name;
+    this.isInline = isInline;
     this.data = data;
   }
 
@@ -17,7 +19,15 @@ export class Asset implements NamedSaveable {
     return this.data.path;
   }
 
-  toData(): [string, AssetData] {
+  static parseRawData(data: unknown): AssetData {
+    return data as AssetData;
+  }
+
+  canBeSaved(): boolean {
+    return !this.isInline;
+  }
+
+  toSaveData(): [string, AssetData] {
     return [this.name, this.data];
   }
 }
