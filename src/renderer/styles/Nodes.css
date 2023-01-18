@@ -56,8 +56,11 @@
 }
 .NodesNode .NodeMoveHandle:hover {
   cursor: move;
+  cursor: grab;
 }
-
+.NodesNode.DropTarget {
+  margin-bottom: 2em;
+}
 
 
 .NodeAddButton {

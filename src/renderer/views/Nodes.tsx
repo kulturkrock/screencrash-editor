@@ -14,6 +14,9 @@ interface IProps {
 interface IState {
   selectedNodeIndex: number;
   nodes: OpusNode[];
+  dragEnabled: boolean;
+  currentDragItem: number;
+  currentDropTarget: number;
 }
 
 class Nodes extends React.PureComponent<IProps, IState> {
@@ -23,7 +26,13 @@ class Nodes extends React.PureComponent<IProps, IState> {
 
   constructor(props: IProps) {
     super(props);
-    this.state = { nodes: [], selectedNodeIndex: -1 };
+    this.state = {
+      nodes: [],
+      selectedNodeIndex: -1,
+      currentDragItem: -1,
+      currentDropTarget: -1,
+      dragEnabled: false,
+    };
     this.updateNodes = this.updateNodes.bind(this);
   }
 
@@ -111,6 +120,20 @@ class Nodes extends React.PureComponent<IProps, IState> {
       });
   }
 
+  endDragEvent(): void {
+    const { nodes, currentDragItem, currentDropTarget } = this.state;
+    const newNodes = [...nodes];
+    const elementToMove = nodes[currentDragItem];
+    newNodes.splice(currentDragItem, 1);
+    newNodes.splice(currentDropTarget, 0, elementToMove);
+
+    this.setState({
+      currentDragItem: -1,
+      currentDropTarget: -1,
+      nodes: [...newNodes],
+    });
+  }
+
   toggleSelect(index: number): void {
     const { onSelect } = this.props;
     const { nodes, selectedNodeIndex } = this.state;
@@ -120,13 +143,14 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   render(): JSX.Element {
-    const { nodes, selectedNodeIndex } = this.state;
+    const { nodes, selectedNodeIndex, dragEnabled, currentDropTarget } =
+      this.state;
 
     return (
       <div
         className={`NodesList ${
           selectedNodeIndex >= 0 ? 'ActiveSelection' : ''
-        }`}
+        } ${dragEnabled ? 'Dragging' : ''}`}
       >
         <button
           className="NodeAddButton"
@@ -140,16 +164,30 @@ class Nodes extends React.PureComponent<IProps, IState> {
           return (
             <div
               key={node.name}
-              role="presentation"
               className={`NodesNode  ${index % 2 ? 'odd' : 'even'} ${
                 index === selectedNodeIndex ? 'selected' : ''
-              }`}
-              onClick={this.toggleSelect.bind(this, index)}
+              } ${index === currentDropTarget ? 'DropTarget' : ''}`}
+              onDragStart={() => {
+                console.log('drag start');
+                this.setState({ currentDragItem: index });
+              }}
+              onDragEnter={() => this.setState({ currentDropTarget: index })}
+              onDragEnd={this.endDragEvent.bind(this)}
+              draggable={dragEnabled}
             >
-              <span className="NodeMoveHandle" role="presentation">
+              <span
+                className="NodeMoveHandle"
+                role="presentation"
+                onMouseDown={() => this.setState({ dragEnabled: true })}
+                onMouseUp={() => this.setState({ dragEnabled: false })}
+              >
                 <FaGripVertical />
               </span>
-              <div>
+              <div
+                role="presentation"
+                onMouseDown={() => this.setState({ dragEnabled: false })}
+                onClick={this.toggleSelect.bind(this, index)}
+              >
                 {node.data.lineNumber
                   ? `${node.data.lineNumber} ${node.data.prompt}`
                   : node.data.prompt}
@@ -157,6 +195,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
               <span
                 className="NodeRemoveButton"
                 role="presentation"
+                onMouseDown={() => this.setState({ dragEnabled: false })}
                 onClick={(event) => {
                   event.stopPropagation();
                   this.removeNode(node.name);
