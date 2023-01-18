@@ -9,7 +9,20 @@ interface IProps {
 class Preview extends React.PureComponent<IProps, IEmpty> {
   render(): JSX.Element {
     const { node } = this.props;
-    return <div>Preview {node ? 'Node is set' : 'No node'}</div>;
+    if (node === null) {
+      return (
+        <div>
+          <div className="CenteredInParent">
+            Select a node to start the preview
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div>
+        <div className="CenteredInParent">Preview will be here when done</div>
+      </div>
+    );
   }
 }
 

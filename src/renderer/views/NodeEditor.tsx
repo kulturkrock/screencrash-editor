@@ -18,12 +18,9 @@ interface IState {
   pdfPage?: number;
   pdfLocationOnPage?: number;
   lineNumber?: number;
-  actions: string[];
   hasChanges: boolean;
 
-  availableActions?: string[];
   availableNodes?: OpusNode[];
-  actionDescriptions?: { [key: string]: string };
 }
 
 const getOptionalInt = (val: string): number | undefined => {
@@ -34,27 +31,15 @@ const getOptionalFloat = (val: string): number | undefined => {
 };
 
 class NodeEditor extends React.PureComponent<IProps, IState> {
-  _unregisterActionUpdates: (() => void) | undefined;
   _unregisterNodeUpdates: (() => void) | undefined;
 
   constructor(props: IProps) {
     super(props);
-    this.state = {
-      ...this.getLoadState(),
-      availableActions: [],
-      actionDescriptions: {},
-    };
-    this.updateAvailableActions = this.updateAvailableActions.bind(this);
+    this.state = this.getLoadState();
     this.updateAvailableNodes = this.updateAvailableNodes.bind(this);
-    this.getActionPicker = this.getActionPicker.bind(this);
   }
 
   componentDidMount(): void {
-    this.updateAvailableActions();
-    this._unregisterActionUpdates = getApi().addChangeListener(
-      ChangeType.Actions,
-      this.updateAvailableActions
-    );
     this.updateAvailableNodes();
     this._unregisterNodeUpdates = getApi().addChangeListener(
       ChangeType.Nodes,
@@ -74,9 +59,6 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
   }
 
   componentWillUnmount(): void {
-    if (this._unregisterActionUpdates) {
-      this._unregisterActionUpdates();
-    }
     if (this._unregisterNodeUpdates) {
       this._unregisterNodeUpdates();
     }
@@ -92,7 +74,6 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
         pdfPage: prevState.pdfPage,
         pdfLocationOnPage: prevState.pdfLocationOnPage,
         lineNumber: prevState.lineNumber,
-        actions: prevState.actions.filter((action) => action !== ''),
       };
       const api = getApi();
       api
@@ -121,22 +102,14 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
         pdfPage: node.data.pdfPage,
         pdfLocationOnPage: node.data.pdfLocationOnPage,
         lineNumber: node.data.lineNumber,
-        actions: node.data.actions || [],
         hasChanges: false,
       };
     }
     return {
       next: '',
       prompt: '',
-      actions: [],
       hasChanges: false,
     };
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  addAction(): void {
-    const { actions } = this.state;
-    this.setState({ actions: [...actions, ''] });
   }
 
   setNextNodeType(event: React.ChangeEvent<HTMLSelectElement>): void {
@@ -195,50 +168,6 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
     return <div>{elements}</div>;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  getActionPicker(action: string, index: number): JSX.Element {
-    const { availableActions, actionDescriptions } = this.state;
-    return (
-      <div className="ActionPicker" key={`actionpicker_${index}`}>
-        <select
-          value={action}
-          onChange={(event) => this.setAction(index, event.target.value)}
-        >
-          <option value="">Choose action</option>
-          {(availableActions || []).map((name) => (
-            <option key={`action_${name}`} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <span>
-          {actionDescriptions && action in actionDescriptions
-            ? actionDescriptions[action]
-            : ''}
-        </span>
-      </div>
-    );
-  }
-
-  setAction(index: number, actionName: string): void {
-    const { actions } = this.state;
-    const newActions = [...actions];
-    newActions[index] = actionName;
-    this.setState({ actions: newActions, hasChanges: true });
-  }
-
-  updateAvailableActions(): void {
-    const api = getApi();
-    api
-      .getActions()
-      .then((actions) =>
-        this.setState({ availableActions: actions.map((a) => a.name) })
-      )
-      .then(api.getActionDescriptions)
-      .then((actionDescriptions) => this.setState({ actionDescriptions }))
-      .catch((err) => `Failed to update available actions: ${err}`);
-  }
-
   updateAvailableNodes(): void {
     const api = getApi();
     api
@@ -253,14 +182,8 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
       return <div />;
     }
 
-    const {
-      prompt,
-      lineNumber,
-      pdfPage,
-      pdfLocationOnPage,
-      actions,
-      hasChanges,
-    } = this.state;
+    const { prompt, lineNumber, pdfPage, pdfLocationOnPage, hasChanges } =
+      this.state;
 
     return (
       <div className="NodeEditor">
@@ -303,20 +226,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
           <div className="FieldDescription">Next node</div>
           {this.nextNodeFields()}
         </div>
-        <div className="EditField">
-          <div className="FieldDescription">Actions</div>
-          {actions.map(this.getActionPicker)}
-          <button
-            type="button"
-            className="FlexButton AddActionButton"
-            onClick={this.addAction.bind(this)}
-          >
-            <FaPlus />
-            Add another action
-          </button>
-        </div>
 
-        <br />
         <Collapsible header="Optional parameters" defaultOpen>
           <div className="EditField">
             <div className="FieldDescription">Line number</div>

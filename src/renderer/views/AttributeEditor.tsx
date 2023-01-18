@@ -13,7 +13,11 @@ class AttributeEditor extends React.PureComponent<IProps, IEmpty> {
     if (node !== null) {
       return <NodeEditor node={node} />;
     }
-    return <div />;
+    return (
+      <div style={{ borderLeft: '1px solid', padding: '1em' }}>
+        Select a node to start editing
+      </div>
+    );
   }
 }
 

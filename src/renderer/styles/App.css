@@ -68,6 +68,12 @@ select, option {
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
 }
+.CenteredInParent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 .FlexButton {
   display: flex;
   align-items: center;
