@@ -1,5 +1,6 @@
-input[type=text].wide {
-  width: 500px;
+.NodeEditor {
+  padding: 0em 1em;
+  border-left: 1px solid;
 }
 
 .ActionPicker span {

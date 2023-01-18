@@ -4,12 +4,13 @@ import '../styles/Collapsible.css';
 
 interface IProps {
   header: string;
+  defaultOpen: boolean;
   children: ReactNode;
 }
 
 export default (props: IProps) => {
-  const [open, setOpen] = useState(false);
-  const { header, children } = props;
+  const { header, children, defaultOpen } = props;
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div>
       <div

@@ -51,6 +51,13 @@ select, option {
   cursor: default;
   margin-bottom: 0.3em;
 }
+.FieldInput {
+  display: flex;
+  width: 100%;
+}
+.FieldInput * {
+  flex: 1;
+}
 
 
 /* Helpful app-wide classes */
@@ -69,29 +76,29 @@ select, option {
 }
 
 
-.EditorHeader {
+.HeaderWithButtons {
   display: flex;
   align-items: center;
 }
-.EditorHeader h3 {
+.HeaderWithButtons h3 {
   flex: 1;
 }
-.EditorHeader button {
+.HeaderWithButtons button {
   height: 2em;
   margin-left: 0.5em;
   border: 1px solid darkgray;
 }
-.EditorHeader button:hover {
+.HeaderWithButtons button:hover {
   cursor: pointer;
 }
-.EditorHeader button:disabled {
+.HeaderWithButtons button:disabled {
   opacity: 0.2;
 }
-.EditorHeader button.Apply {
+.HeaderWithButtons button.Apply {
   background: forestgreen;
   color: white;
 }
-.EditorHeader button.Abort {
+.HeaderWithButtons button.Abort {
   background: darkred;
   color: white;
 }

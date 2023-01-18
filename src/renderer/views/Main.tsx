@@ -1,68 +1,54 @@
 import * as React from 'react';
 
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+// import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import '../styles/Main.css';
 import { IEmpty } from '../util/types';
 import { getApi } from '../util/backend';
+import { OpusNode } from '../../main/model/node';
+
 import Nodes from './Nodes';
-import Actions from './Actions';
-import Assets from './Assets';
+import Preview from './Preview';
+import AttributeEditor from './AttributeEditor';
 
 interface IState {
   isLoaded: boolean;
+  currentNode: OpusNode | null;
 }
 
 class Main extends React.PureComponent<IEmpty, IState> {
+  _unregisterLoadListener: (() => void) | undefined;
+
   constructor(props: IEmpty) {
     super(props);
-    this.state = { isLoaded: false };
+    this.state = { isLoaded: false, currentNode: null };
   }
 
   componentDidMount(): void {
-    getApi().addLoadListener((loaded: boolean) => {
-      this.setState({ isLoaded: loaded });
-    });
+    this._unregisterLoadListener = getApi().addLoadListener(
+      (loaded: boolean) => {
+        this.setState({ isLoaded: loaded, currentNode: null });
+      }
+    );
   }
 
-  componentWillUnmount(): void {}
+  componentWillUnmount(): void {
+    if (this._unregisterLoadListener) {
+      this._unregisterLoadListener();
+    }
+  }
 
   render(): JSX.Element {
-    const { isLoaded } = this.state;
+    const { isLoaded, currentNode } = this.state;
     if (!isLoaded) {
       return <div className="MainNoOpus">Load or create an opus to start</div>;
     }
 
     return (
       <div className="Main">
-        <div className="MainLeft">LEFT</div>
-        <div className="MainMid">
-          <Tabs
-            selectedTabClassName="MainTab-Selected"
-            selectedTabPanelClassName="MainTabPanel-Selected"
-            forceRenderTabPanel
-            focusTabOnClick={false}
-          >
-            <TabList className="MainTabList">
-              <Tab className="MainTab">Nodes</Tab>
-              <Tab className="MainTab">Actions</Tab>
-              <Tab className="MainTab">Assets</Tab>
-              <Tab className="MainTab">Live utility</Tab>
-            </TabList>
-            <TabPanel>
-              <Nodes />
-            </TabPanel>
-            <TabPanel>
-              <Actions />
-            </TabPanel>
-            <TabPanel>
-              <Assets />
-            </TabPanel>
-            <TabPanel>
-              <h2>Utilities here</h2>
-            </TabPanel>
-          </Tabs>
-        </div>
+        <Nodes onSelect={(node) => this.setState({ currentNode: node })} />
+        <Preview node={currentNode} />
+        <AttributeEditor node={currentNode} />
       </div>
     );
   }

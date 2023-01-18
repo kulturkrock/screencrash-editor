@@ -2,6 +2,7 @@ import {
   ACTIONS_CHANGED,
   ASSETS_CHANGED,
   Channels,
+  DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
   GET_ASSETS,
@@ -11,6 +12,7 @@ import {
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
+  SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
   UPDATE_NODE,
@@ -53,8 +55,11 @@ interface IApi {
     useInline: boolean
   ) => Promise<string>;
 
+  deleteNode: (name: string) => Promise<string>;
+
   getAvailableCommands: () => Promise<{ [component: string]: ICommand[] }>;
 
+  ask: (title: string, message: string, options: string[]) => Promise<number>;
   showInfoMessage: (title: string, message: string) => Promise<boolean>;
   showWarningMessage: (title: string, message: string) => Promise<boolean>;
   showErrorMessage: (title: string, message: string) => Promise<boolean>;
@@ -113,6 +118,7 @@ class Api implements IApi {
     return args[0] as Action[];
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async getActionDescriptions(): Promise<{ [name: string]: string }> {
     const args = await callIpc(GET_ACTION_DESCRIPTIONS);
     return args[0] as { [name: string]: string };
@@ -153,9 +159,25 @@ class Api implements IApi {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  async deleteNode(name: string): Promise<string> {
+    const args = await callIpc(DELETE_NODE, name);
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   async getAvailableCommands(): Promise<{ [component: string]: ICommand[] }> {
     const args = await callIpc(LIST_COMMANDS);
     return args[0] as { [component: string]: ICommand[] };
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async ask(
+    title: string,
+    message: string,
+    options: string[]
+  ): Promise<number> {
+    const args = await callIpc(SHOW_ASK_DIALOG, title, message, options);
+    return args[0] as number;
   }
 
   // eslint-disable-next-line class-methods-use-this

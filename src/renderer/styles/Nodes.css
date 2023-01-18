@@ -1,8 +1,3 @@
-.Nodes {
-  display: flex;
-  height: 100%;
-}
-
 .NodesList {
   overflow-y:auto;
   padding: 1em;
@@ -10,7 +5,10 @@
 }
 
 .NodesNode {
-  padding: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  white-space: nowrap;
   margin-bottom: 0.5em;
   border: 1px solid white;
 
@@ -39,8 +37,31 @@
   opacity: 1;
 }
 
-.NodesEditor {
+.NodesNode div {
+  overflow: hidden;
   flex: 1;
-  padding: 1em;
-  overflow-y:auto;
+  padding: 0.5em 0.5em 0.5em 0em;
+}
+.NodesNode .NodeRemoveButton {
+  height: 100%;
+  border-left: 1px solid;
+  padding: 0.5em 0.8em;
+}
+.NodesNode .NodeRemoveButton:hover {
+  background: darkred;
+}
+.NodesNode .NodeMoveHandle {
+  height: 100%;
+  padding: 0.8em 0.5em 0.5em 0.5em;
+}
+.NodesNode .NodeMoveHandle:hover {
+  cursor: move;
+}
+
+
+
+.NodeAddButton {
+  width: 100%;
+  padding: 0.5em 0em;
+  margin-bottom: 0.5em;
 }

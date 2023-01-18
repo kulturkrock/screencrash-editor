@@ -324,7 +324,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
     }
 
     const header = (
-      <div className="EditorHeader">
+      <div className="HeaderWithButtons">
         <h3>Edit action</h3>
         <button
           type="button"

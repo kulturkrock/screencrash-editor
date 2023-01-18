@@ -11,11 +11,13 @@ export const GET_ACTION_DESCRIPTIONS = 'get_action_descriptions';
 export const GET_ASSETS = 'get_assets';
 export const UPDATE_NODE = 'update_node';
 export const UPDATE_ACTION = 'update_action';
+export const DELETE_NODE = 'delete_node';
 
 export const LIST_COMMANDS = 'list_commands';
 export const RELOAD_COMMANDS = 'reload_commands';
 
 export const SHOW_DIALOG = 'show_dialog';
+export const SHOW_ASK_DIALOG = 'show_ask_dialog';
 
 export type Channels =
   | 'get_loading_text'
@@ -30,6 +32,8 @@ export type Channels =
   | 'get_assets'
   | 'update_node'
   | 'update_action'
+  | 'delete_node'
   | 'list_commands'
   | 'reload_commands'
-  | 'show_dialog';
+  | 'show_dialog'
+  | 'show_ask_dialog';

@@ -9,7 +9,6 @@ import { MultiJumpNode, OpusNode, OpusNodeData } from '../../main/model/node';
 import Collapsible from './Collapsible';
 
 interface IProps {
-  nodes: OpusNode[];
   node: OpusNode | null;
 }
 
@@ -23,6 +22,7 @@ interface IState {
   hasChanges: boolean;
 
   availableActions?: string[];
+  availableNodes?: OpusNode[];
   actionDescriptions?: { [key: string]: string };
 }
 
@@ -34,7 +34,8 @@ const getOptionalFloat = (val: string): number | undefined => {
 };
 
 class NodeEditor extends React.PureComponent<IProps, IState> {
-  _unregisterUpdates: (() => void) | undefined;
+  _unregisterActionUpdates: (() => void) | undefined;
+  _unregisterNodeUpdates: (() => void) | undefined;
 
   constructor(props: IProps) {
     super(props);
@@ -43,15 +44,21 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
       availableActions: [],
       actionDescriptions: {},
     };
-    this.updateActions = this.updateActions.bind(this);
+    this.updateAvailableActions = this.updateAvailableActions.bind(this);
+    this.updateAvailableNodes = this.updateAvailableNodes.bind(this);
     this.getActionPicker = this.getActionPicker.bind(this);
   }
 
   componentDidMount(): void {
-    this.updateActions();
-    this._unregisterUpdates = getApi().addChangeListener(
+    this.updateAvailableActions();
+    this._unregisterActionUpdates = getApi().addChangeListener(
       ChangeType.Actions,
-      this.updateActions
+      this.updateAvailableActions
+    );
+    this.updateAvailableNodes();
+    this._unregisterNodeUpdates = getApi().addChangeListener(
+      ChangeType.Nodes,
+      this.updateAvailableNodes
     );
   }
 
@@ -67,14 +74,17 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
   }
 
   componentWillUnmount(): void {
-    if (this._unregisterUpdates) {
-      this._unregisterUpdates();
+    if (this._unregisterActionUpdates) {
+      this._unregisterActionUpdates();
+    }
+    if (this._unregisterNodeUpdates) {
+      this._unregisterNodeUpdates();
     }
   }
 
   // eslint-disable-next-line react/sort-comp, class-methods-use-this
   updateModel(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
-    if (prevProps.node !== null) {
+    if (prevProps.node) {
       const nodeData: OpusNodeData = {
         ...prevProps.node.data,
         next: prevState.next,
@@ -131,22 +141,22 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
 
   setNextNodeType(event: React.ChangeEvent<HTMLSelectElement>): void {
     const isSimple = event.target.value === 'simple';
-    const { node, nodes } = this.props;
-    if (!node || nodes.length === 0) {
+    const { availableNodes } = this.state;
+    const { node } = this.props;
+    if (!node || !availableNodes || availableNodes.length === 0) {
       console.log(`Failed to set next node. Empty nodes list or error on node`);
       return;
     }
 
     if (isSimple) {
-      this.setState({ next: nodes[0].name, hasChanges: true });
+      this.setState({ next: availableNodes[0].name, hasChanges: true });
     } else {
       this.setState({ next: [], hasChanges: true });
     }
   }
 
   nextNodeFields(): JSX.Element {
-    const { nodes } = this.props;
-    const { next } = this.state;
+    const { next, availableNodes } = this.state;
     const isSimpleNext = typeof next === 'string';
     const elements: JSX.Element[] = [];
     elements.push(
@@ -169,7 +179,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
             this.setState({ next: event.target.value, hasChanges: true })
           }
         >
-          {nodes.map((nodeEl) => (
+          {(availableNodes || []).map((nodeEl) => (
             <option key={`node_${nodeEl.name}`} value={nodeEl.name}>
               {nodeEl.data.prompt}
             </option>
@@ -217,7 +227,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
     this.setState({ actions: newActions, hasChanges: true });
   }
 
-  updateActions(): void {
+  updateAvailableActions(): void {
     const api = getApi();
     api
       .getActions()
@@ -226,7 +236,15 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
       )
       .then(api.getActionDescriptions)
       .then((actionDescriptions) => this.setState({ actionDescriptions }))
-      .catch((err) => `Failed to update actions: ${err}`);
+      .catch((err) => `Failed to update available actions: ${err}`);
+  }
+
+  updateAvailableNodes(): void {
+    const api = getApi();
+    api
+      .getNodes()
+      .then((nodes) => this.setState({ availableNodes: nodes }))
+      .catch((err) => `Failed to update available nodes: ${err}`);
   }
 
   render(): JSX.Element {
@@ -246,8 +264,8 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
 
     return (
       <div className="NodeEditor">
-        <div className="EditorHeader">
-          <h3>Edit node</h3>
+        <div className="HeaderWithButtons">
+          <h3>Properties</h3>
           <button
             type="button"
             className="Abort"
@@ -270,15 +288,16 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
         </div>
         <div className="EditField">
           <div className="FieldDescription">Prompt text</div>
-          <input
-            type="text"
-            placeholder="E.g. Oh noes Jane, how could you do this?"
-            size={70}
-            value={prompt}
-            onChange={(event) =>
-              this.setState({ prompt: event.target.value, hasChanges: true })
-            }
-          />
+          <div className="FieldInput">
+            <input
+              type="text"
+              placeholder="E.g. Oh noes Jane, how could you do this?"
+              value={prompt}
+              onChange={(event) =>
+                this.setState({ prompt: event.target.value, hasChanges: true })
+              }
+            />
+          </div>
         </div>
         <div className="EditField">
           <div className="FieldDescription">Next node</div>
@@ -298,39 +317,43 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
         </div>
 
         <br />
-        <Collapsible header="Optional parameters">
+        <Collapsible header="Optional parameters" defaultOpen>
           <div className="EditField">
             <div className="FieldDescription">Line number</div>
-            <input
-              type="number"
-              min={0}
-              max={10000}
-              step={1}
-              size={5}
-              value={lineNumber !== undefined ? lineNumber : ''}
-              onChange={(event) =>
-                this.setState({
-                  lineNumber: getOptionalInt(event.target.value),
-                  hasChanges: true,
-                })
-              }
-            />
+            <div className="FieldInput">
+              <input
+                type="number"
+                min={0}
+                max={10000}
+                step={1}
+                size={5}
+                value={lineNumber !== undefined ? lineNumber : ''}
+                onChange={(event) =>
+                  this.setState({
+                    lineNumber: getOptionalInt(event.target.value),
+                    hasChanges: true,
+                  })
+                }
+              />
+            </div>
           </div>
           <div className="EditField">
             <div className="FieldDescription">PDF page</div>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              size={5}
-              value={pdfPage !== undefined ? pdfPage : ''}
-              onChange={(event) =>
-                this.setState({
-                  pdfPage: getOptionalInt(event.target.value),
-                  hasChanges: true,
-                })
-              }
-            />
+            <div className="FieldInput">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                size={5}
+                value={pdfPage !== undefined ? pdfPage : ''}
+                onChange={(event) =>
+                  this.setState({
+                    pdfPage: getOptionalInt(event.target.value),
+                    hasChanges: true,
+                  })
+                }
+              />
+            </div>
           </div>
           <div className="EditField">
             <div
@@ -339,20 +362,22 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
             >
               PDF page location, value between 0.0 and 1.0
             </div>
-            <input
-              type="number"
-              min={0}
-              max={1}
-              step={0.1}
-              size={5}
-              value={pdfLocationOnPage !== undefined ? pdfLocationOnPage : ''}
-              onChange={(event) =>
-                this.setState({
-                  pdfLocationOnPage: getOptionalFloat(event.target.value),
-                  hasChanges: true,
-                })
-              }
-            />
+            <div className="FieldInput">
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.1}
+                size={5}
+                value={pdfLocationOnPage !== undefined ? pdfLocationOnPage : ''}
+                onChange={(event) =>
+                  this.setState({
+                    pdfLocationOnPage: getOptionalFloat(event.target.value),
+                    hasChanges: true,
+                  })
+                }
+              />
+            </div>
           </div>
         </Collapsible>
       </div>

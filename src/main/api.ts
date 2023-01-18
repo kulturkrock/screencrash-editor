@@ -4,6 +4,7 @@ import {
   ACTIONS_CHANGED,
   ASSETS_CHANGED,
   Channels,
+  DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
   GET_ASSETS,
@@ -14,6 +15,7 @@ import {
   NODES_CHANGED,
   OPEN_OPUS,
   RELOAD_COMMANDS,
+  SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
   UPDATE_NODE,
@@ -47,6 +49,8 @@ interface IApi {
     data: ActionData,
     useInline: boolean
   ) => string;
+
+  deleteNode: (name: string) => string;
 }
 
 class Api implements IApi {
@@ -197,6 +201,12 @@ class Api implements IApi {
     if (opus) return opus.updateAction(name, useInline, data);
     return '';
   }
+
+  deleteNode(name: string): string {
+    const opus = Model.getOpus();
+    if (opus && opus.deleteNode(name)) return name;
+    return '';
+  }
 }
 
 const CURRENT_API = new Api();
@@ -208,6 +218,15 @@ const addSimpleGetter = (channel: Channels, func: () => unknown): void => {
   ipcMain.on(channel, async (event) => {
     event.reply(channel, func());
   });
+};
+
+const showAskDialog = (
+  win: BrowserWindow,
+  title: string,
+  message: string,
+  buttons: string[]
+): number => {
+  return dialog.showMessageBoxSync(win, { title, message, buttons });
 };
 
 const showOKDialog = (
@@ -262,6 +281,12 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     event.reply(UPDATE_ACTION, result);
   });
 
+  ipcMain.on(DELETE_NODE, (event, args) => {
+    const name = args[0] as string;
+    const result = CURRENT_API.deleteNode(name);
+    event.reply(DELETE_NODE, result);
+  });
+
   ipcMain.on(LIST_COMMANDS, (event) => {
     const cmds = getAvailableCommands();
     event.reply(LIST_COMMANDS, cmds);
@@ -269,6 +294,18 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
 
   ipcMain.on(RELOAD_COMMANDS, () => {
     reloadCommands();
+  });
+
+  ipcMain.on(SHOW_ASK_DIALOG, async (event, args) => {
+    if (args.length !== 3) {
+      event.reply(SHOW_ASK_DIALOG, -1);
+      return;
+    }
+    const title = args[0] as string;
+    const message = args[1] as string;
+    const buttons = args[2] as string[];
+    const result = showAskDialog(mainWindow, title, message, buttons);
+    event.reply(SHOW_ASK_DIALOG, result);
   });
 
   ipcMain.on(SHOW_DIALOG, async (event, args) => {

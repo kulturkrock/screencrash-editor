@@ -59,7 +59,7 @@ export class OpusNode implements NamedSaveable {
   }
 
   static getEmptyNodeData(): OpusNodeData {
-    return { next: 'default', prompt: '' };
+    return { next: 'default', prompt: 'Default prompt' };
   }
 
   // eslint-disable-next-line class-methods-use-this

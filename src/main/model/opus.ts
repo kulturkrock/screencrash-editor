@@ -156,6 +156,15 @@ export default class Opus extends EventEmitter {
     return nameToUse;
   }
 
+  deleteNode(name: string): boolean {
+    if (name in this.nodes) {
+      delete this.nodes[name];
+      this.emitChangeEvent('nodes');
+      return true;
+    }
+    return false;
+  }
+
   _getSaveData(): unknown {
     // Make sure all nodes knows about the available actions/assets
     Object.keys(this.nodes).forEach((key) =>
