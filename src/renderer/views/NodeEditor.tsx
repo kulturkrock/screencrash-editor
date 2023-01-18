@@ -308,7 +308,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
           {actions.map(this.getActionPicker)}
           <button
             type="button"
-            className="FlexButton"
+            className="FlexButton AddActionButton"
             onClick={this.addAction.bind(this)}
           >
             <FaPlus />

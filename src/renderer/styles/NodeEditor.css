@@ -3,6 +3,12 @@
   border-left: 1px solid;
 }
 
+.ActionPicker {
+  display: flex;
+}
 .ActionPicker span {
   margin-left: 1em;
+}
+.AddActionButton {
+  margin-top: 1em;
 }

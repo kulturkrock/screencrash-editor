@@ -12,6 +12,14 @@ input[type=text].wide {
 .ToggleHeader h3 {
   margin-right: 0.5em;
 }
+.ToggleIcon {
+  background: white;
+  color: purple;
+  font-weight: bold;
+  font-size: 0.6em;
+  padding: 0.2em 0.6em;
+  border-radius: 0.4em;
+}
 
 .ToggleBody.Hidden {
   display: none;

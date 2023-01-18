@@ -45,14 +45,14 @@
 .NodesNode .NodeRemoveButton {
   height: 100%;
   border-left: 1px solid;
-  padding: 0.5em 0.8em;
+  padding: 0.6em 0.8em 0.4em 0.8em;
 }
 .NodesNode .NodeRemoveButton:hover {
   background: darkred;
 }
 .NodesNode .NodeMoveHandle {
   height: 100%;
-  padding: 0.8em 0.5em 0.5em 0.5em;
+  padding: 0.6em 0.5em 0.4em 0.5em;
 }
 .NodesNode .NodeMoveHandle:hover {
   cursor: move;

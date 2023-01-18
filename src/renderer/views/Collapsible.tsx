@@ -23,7 +23,15 @@ export default (props: IProps) => {
       >
         <h3>{header}</h3>
         <div className="ToggleIcon">
-          {open ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+          {open ? (
+            <span>
+              HIDE <FaChevronCircleUp />
+            </span>
+          ) : (
+            <span>
+              SHOW <FaChevronCircleDown />
+            </span>
+          )}
         </div>
       </div>
       <div className={`ToggleBody ${open ? '' : 'Hidden'}`}>{children}</div>
