@@ -73,11 +73,13 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   addNode(): void {
+    const { onSelect } = this.props;
     const api = getApi();
     api
       .createNode()
       .then(api.getNodes)
       .then((nodes: OpusNode[]) => {
+        onSelect(nodes[nodes.length - 1]);
         this.setState({ nodes, selectedNodeIndex: nodes.length - 1 });
         return true;
       })
@@ -95,8 +97,8 @@ class Nodes extends React.PureComponent<IProps, IState> {
       });
   }
 
-  removeNode(name: string): void {
-    const { nodes } = this.state;
+  removeNode(name: string, index: number): void {
+    const { nodes, selectedNodeIndex } = this.state;
     const nodeCandidates = nodes.filter((node) => node.name === name);
     if (nodeCandidates.length === 0) {
       console.log(
@@ -115,6 +117,11 @@ class Nodes extends React.PureComponent<IProps, IState> {
       .then((result) => {
         if (result === 0) {
           api.deleteNode(name);
+          // Hack to counter delay
+          setTimeout(() => {
+            if (index === selectedNodeIndex)
+              this.toggleSelect(Math.min(index, nodes.length - 1), true);
+          }, 100);
           return true;
         }
         return false;
@@ -138,10 +145,11 @@ class Nodes extends React.PureComponent<IProps, IState> {
     });
   }
 
-  toggleSelect(index: number): void {
+  toggleSelect(index: number, forceSelect = false): void {
     const { onSelect } = this.props;
     const { nodes, selectedNodeIndex } = this.state;
-    const newSelection = selectedNodeIndex === index ? -1 : index;
+    const newSelection =
+      selectedNodeIndex === index && !forceSelect ? -1 : index;
     onSelect(newSelection >= 0 ? nodes[newSelection] : null);
     this.setState({ selectedNodeIndex: newSelection });
   }
@@ -207,7 +215,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
               <div
                 role="presentation"
                 onMouseDown={() => this.setState({ dragEnabled: false })}
-                onClick={this.toggleSelect.bind(this, index)}
+                onClick={this.toggleSelect.bind(this, index, false)}
               >
                 {node.data.lineNumber
                   ? `${node.data.lineNumber} ${node.data.prompt}`
@@ -220,7 +228,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
                   onMouseDown={() => this.setState({ dragEnabled: false })}
                   onClick={(event) => {
                     event.stopPropagation();
-                    this.removeNode(node.name);
+                    this.removeNode(node.name, index);
                   }}
                 >
                   <FaTrashAlt />
