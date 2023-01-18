@@ -34,11 +34,13 @@ export default class Opus extends EventEmitter {
   assets: { [key: string]: Asset } = {};
   ui: UIConfig | null = null;
 
-  constructor(path: string) {
+  constructor(path: string | null) {
     super();
-    this.inhibitEmits = true;
-    this._loadFromFile(path);
-    this.inhibitEmits = false;
+    if (path) {
+      this.inhibitEmits = true;
+      this._loadFromFile(path);
+      this.inhibitEmits = false;
+    }
 
     this.printReport();
   }
@@ -128,6 +130,14 @@ export default class Opus extends EventEmitter {
     return null;
   }
 
+  addDefaultItems(): void {
+    this.updateNode('default', {
+      ...OpusNode.getEmptyNodeData(),
+      prompt: 'Initial node',
+    });
+    this.startNode = 'default';
+  }
+
   updateAsset(name: string | null, isInline: boolean, data: AssetData): string {
     this.emitChangeEvent('assets');
     const nameToUse =
@@ -157,7 +167,7 @@ export default class Opus extends EventEmitter {
   }
 
   deleteNode(name: string): boolean {
-    if (name in this.nodes) {
+    if (name in this.nodes && name !== this.startNode) {
       delete this.nodes[name];
       this.emitChangeEvent('nodes');
       return true;

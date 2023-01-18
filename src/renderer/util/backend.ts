@@ -8,6 +8,7 @@ import {
   GET_ASSETS,
   GET_LOADING_TEXT,
   GET_NODES,
+  GET_START_NODE,
   LIST_COMMANDS,
   LOADED_CHANGED,
   NODES_CHANGED,
@@ -41,6 +42,7 @@ interface IApi {
 
   openOpus: () => Promise<boolean>;
   getNodes: () => Promise<OpusNode[]>;
+  getStartNode: () => Promise<string>;
   getActions: () => Promise<Action[]>;
   getActionDescriptions: () => Promise<{ [name: string]: string }>;
   getAssets: () => Promise<Asset[]>;
@@ -110,6 +112,12 @@ class Api implements IApi {
   async getNodes(): Promise<OpusNode[]> {
     const args = await callIpc(GET_NODES, null);
     return args[0] as OpusNode[];
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async getStartNode(): Promise<string> {
+    const args = await callIpc(GET_START_NODE, null);
+    return args[0] as string;
   }
 
   // eslint-disable-next-line class-methods-use-this

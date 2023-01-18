@@ -4,6 +4,7 @@ import Opus from './opus';
 interface IModel extends EventEmitter {
   currentFile: string;
   hasLoaded: () => boolean;
+  new: (file: string) => boolean;
   load: (file: string) => boolean;
   save: (file: string) => boolean;
   unload: () => boolean;
@@ -40,6 +41,13 @@ class Model extends EventEmitter implements IModel {
 
   hasLoaded(): boolean {
     return this.currentFile !== '';
+  }
+
+  new(file: string): boolean {
+    const newOpus = new Opus(null);
+    newOpus.addDefaultItems();
+    newOpus.save(file);
+    return this.load(file);
   }
 
   load(file: string): boolean {

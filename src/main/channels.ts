@@ -6,6 +6,7 @@ export const ASSETS_CHANGED = 'assets_changed';
 export const ACTIONS_CHANGED = 'actions_changed';
 
 export const GET_NODES = 'get_nodes';
+export const GET_START_NODE = 'get_start_node';
 export const GET_ACTIONS = 'get_actions';
 export const GET_ACTION_DESCRIPTIONS = 'get_action_descriptions';
 export const GET_ASSETS = 'get_assets';
@@ -27,6 +28,7 @@ export type Channels =
   | 'assets_changed'
   | 'actions_changed'
   | 'get_nodes'
+  | 'get_start_node'
   | 'get_actions'
   | 'get_action_descriptions'
   | 'get_assets'

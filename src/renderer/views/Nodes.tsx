@@ -14,6 +14,7 @@ interface IProps {
 interface IState {
   selectedNodeIndex: number;
   nodes: OpusNode[];
+  startNode: string;
   dragEnabled: boolean;
   currentDragItem: number;
   currentDropTarget: number;
@@ -28,6 +29,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
     super(props);
     this.state = {
       nodes: [],
+      startNode: '',
       selectedNodeIndex: -1,
       currentDragItem: -1,
       currentDropTarget: -1,
@@ -63,6 +65,8 @@ class Nodes extends React.PureComponent<IProps, IState> {
         this.setState({ nodes });
         return true;
       })
+      .then(getApi().getStartNode)
+      .then((startNode) => this.setState({ startNode }))
       .catch((err) => {
         console.log(`Failed to load nodes: ${err}`);
       });
@@ -145,6 +149,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
   render(): JSX.Element {
     const {
       nodes,
+      startNode,
       selectedNodeIndex,
       dragEnabled,
       currentDropTarget,
@@ -208,17 +213,21 @@ class Nodes extends React.PureComponent<IProps, IState> {
                   ? `${node.data.lineNumber} ${node.data.prompt}`
                   : node.data.prompt}
               </div>
-              <span
-                className="NodeRemoveButton"
-                role="presentation"
-                onMouseDown={() => this.setState({ dragEnabled: false })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  this.removeNode(node.name);
-                }}
-              >
-                <FaTrashAlt />
-              </span>
+              {node.name !== startNode ? (
+                <span
+                  className="NodeRemoveButton"
+                  role="presentation"
+                  onMouseDown={() => this.setState({ dragEnabled: false })}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    this.removeNode(node.name);
+                  }}
+                >
+                  <FaTrashAlt />
+                </span>
+              ) : (
+                ''
+              )}
             </div>
           );
         })}

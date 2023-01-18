@@ -58,6 +58,9 @@ const setupMenu = (): void => {
 
   const api = getApi();
   const menuBuilder = new MenuBuilder(mainWindow);
+  menuBuilder.setActionHandler(menuBuilder.Actions.NEW, async () => {
+    await api.newOpus(null);
+  });
   menuBuilder.setActionHandler(menuBuilder.Actions.OPEN, async () => {
     await api.openOpus(null);
   });

@@ -10,6 +10,7 @@ import {
   GET_ASSETS,
   GET_LOADING_TEXT,
   GET_NODES,
+  GET_START_NODE,
   LIST_COMMANDS,
   LOADED_CHANGED,
   NODES_CHANGED,
@@ -31,6 +32,7 @@ interface IApi {
   getLoadingText: () => string;
   listenToUpdates(listener: () => void): void;
   hasOpenedOpus: () => boolean;
+  newOpus: (file: string | null) => Promise<boolean>;
   openOpus: (file: string | null) => Promise<boolean>;
   saveOpus: () => Promise<boolean>;
   saveOpusAs: (file: string | null) => Promise<boolean>;
@@ -38,6 +40,7 @@ interface IApi {
 
   getNodes: () => OpusNode[];
   getActions: () => Action[];
+  getStartNode: () => string;
   getActionDescriptions: () => { [name: string]: string };
   getAssets: () => Asset[];
 
@@ -80,6 +83,30 @@ class Api implements IApi {
 
   hasOpenedOpus(): boolean {
     return Model.hasLoaded();
+  }
+
+  async newOpus(file: string | null): Promise<boolean> {
+    let fileToCreate = file;
+    if (fileToCreate === null) {
+      fileToCreate = await dialog
+        .showSaveDialog({
+          properties: ['showOverwriteConfirmation'],
+          title: 'Select save location',
+          filters: [{ name: 'Opus files', extensions: ['yaml'] }],
+        })
+        .then((result) => {
+          return !result.canceled && result.filePath ? result.filePath : '';
+        })
+        .catch((err) => {
+          console.log(`Failed to select file to open: ${err}`);
+          return '';
+        });
+    }
+
+    if (fileToCreate === '') {
+      return false;
+    }
+    return Model.new(fileToCreate);
   }
 
   async openOpus(file: string | null): Promise<boolean> {
@@ -153,6 +180,12 @@ class Api implements IApi {
     const opus = Model.getOpus();
     if (opus) return Object.values(opus.nodes);
     return [];
+  }
+
+  getStartNode(): string {
+    const opus = Model.getOpus();
+    if (opus) return opus.startNode;
+    return '';
   }
 
   getActions(): Action[] {
@@ -246,6 +279,7 @@ const showOKDialog = (
 const initApiCommunication = (mainWindow: BrowserWindow): void => {
   addSimpleGetter(GET_LOADING_TEXT, CURRENT_API.getLoadingText);
   addSimpleGetter(GET_NODES, CURRENT_API.getNodes);
+  addSimpleGetter(GET_START_NODE, CURRENT_API.getStartNode);
   addSimpleGetter(GET_ACTIONS, CURRENT_API.getActions);
   addSimpleGetter(GET_ACTION_DESCRIPTIONS, CURRENT_API.getActionDescriptions);
   addSimpleGetter(GET_ASSETS, CURRENT_API.getAssets);
