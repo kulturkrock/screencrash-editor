@@ -58,7 +58,10 @@
   cursor: move;
   cursor: grab;
 }
-.NodesNode.DropTarget {
+.NodesNode.DropTargetBefore {
+  margin-top: 2em;
+}
+.NodesNode.DropTargetAfter {
   margin-bottom: 2em;
 }
 

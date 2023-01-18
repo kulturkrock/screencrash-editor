@@ -143,8 +143,13 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   render(): JSX.Element {
-    const { nodes, selectedNodeIndex, dragEnabled, currentDropTarget } =
-      this.state;
+    const {
+      nodes,
+      selectedNodeIndex,
+      dragEnabled,
+      currentDropTarget,
+      currentDragItem,
+    } = this.state;
 
     return (
       <div
@@ -166,7 +171,18 @@ class Nodes extends React.PureComponent<IProps, IState> {
               key={node.name}
               className={`NodesNode  ${index % 2 ? 'odd' : 'even'} ${
                 index === selectedNodeIndex ? 'selected' : ''
-              } ${index === currentDropTarget ? 'DropTarget' : ''}`}
+              } ${
+                index === currentDropTarget &&
+                currentDropTarget < currentDragItem
+                  ? 'DropTargetBefore'
+                  : ''
+              }
+              ${
+                index === currentDropTarget &&
+                currentDropTarget > currentDragItem
+                  ? 'DropTargetAfter'
+                  : ''
+              }`}
               onDragStart={() => {
                 console.log('drag start');
                 this.setState({ currentDragItem: index });
