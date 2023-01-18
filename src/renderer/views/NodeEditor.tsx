@@ -77,18 +77,23 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
       };
       const api = getApi();
       api
-        .updateNode(prevProps.node.name, nodeData)
+        .nodeExists(prevProps.node.name)
+        .then((exists) => (exists ? Promise.resolve() : Promise.reject()))
+        .then(() => api.updateNode(prevProps.node?.name || null, nodeData))
         .then(async (usedName) => {
           if (usedName === '') {
+            throw new Error('Unknown error when saving node');
+          }
+          return true;
+        })
+        .catch((reason) => {
+          if (reason) {
+            console.log(`Failed to save node changes ${reason}`);
             api.showErrorMessage(
               'Failed to update',
               'Failed to save your changes to the node. Please try again'
             );
           }
-          return true;
-        })
-        .catch((reason) => {
-          console.log(`Failed to notify user about error due to ${reason}`);
         });
     }
   }

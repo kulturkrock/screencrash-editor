@@ -10,6 +10,7 @@ export const GET_START_NODE = 'get_start_node';
 export const GET_ACTIONS = 'get_actions';
 export const GET_ACTION_DESCRIPTIONS = 'get_action_descriptions';
 export const GET_ASSETS = 'get_assets';
+export const CHECK_NODE_EXISTS = 'node_exists';
 export const UPDATE_NODE = 'update_node';
 export const UPDATE_ACTION = 'update_action';
 export const DELETE_NODE = 'delete_node';
@@ -32,6 +33,7 @@ export type Channels =
   | 'get_actions'
   | 'get_action_descriptions'
   | 'get_assets'
+  | 'node_exists'
   | 'update_node'
   | 'update_action'
   | 'delete_node'

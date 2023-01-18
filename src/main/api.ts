@@ -4,6 +4,7 @@ import {
   ACTIONS_CHANGED,
   ASSETS_CHANGED,
   Channels,
+  CHECK_NODE_EXISTS,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -43,6 +44,7 @@ interface IApi {
   getStartNode: () => string;
   getActionDescriptions: () => { [name: string]: string };
   getAssets: () => Asset[];
+  nodeExists: (name: string) => boolean;
 
   reloadCommands: () => void;
 
@@ -213,6 +215,12 @@ class Api implements IApi {
     return [];
   }
 
+  nodeExists(name: string): boolean {
+    const opus = Model.getOpus();
+    if (opus) return name in opus.nodes;
+    return false;
+  }
+
   reloadCommands(): void {
     // Call on function in commands.ts
     // (that happens to be called the same)
@@ -288,6 +296,12 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     const file = args.length > 0 ? args[0] : null;
     const success = await CURRENT_API.openOpus(file);
     event.reply(OPEN_OPUS, success);
+  });
+
+  ipcMain.on(CHECK_NODE_EXISTS, (event, args) => {
+    const name = args[0] as string;
+    const result = CURRENT_API.nodeExists(name);
+    event.reply(CHECK_NODE_EXISTS, result);
   });
 
   ipcMain.on(UPDATE_NODE, (event, args) => {

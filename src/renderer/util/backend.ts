@@ -2,6 +2,7 @@ import {
   ACTIONS_CHANGED,
   ASSETS_CHANGED,
   Channels,
+  CHECK_NODE_EXISTS,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -50,6 +51,7 @@ interface IApi {
   createNode: () => Promise<string>;
   createAction: () => Promise<string>;
 
+  nodeExists: (name: string) => Promise<boolean>;
   updateNode: (name: string | null, data: OpusNodeData) => Promise<string>;
   updateAction: (
     name: string | null,
@@ -148,6 +150,12 @@ class Api implements IApi {
   async createAction(): Promise<string> {
     const actionData = Action.getEmptyActionData();
     return this.updateAction(null, actionData, false);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async nodeExists(name: string): Promise<boolean> {
+    const args = await callIpc(CHECK_NODE_EXISTS, name);
+    return args[0] as boolean;
   }
 
   // eslint-disable-next-line class-methods-use-this

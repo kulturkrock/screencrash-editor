@@ -12,7 +12,7 @@ interface IProps {
 }
 
 interface IState {
-  selectedNodeIndex: number;
+  selectedNode: string;
   nodes: OpusNode[];
   startNode: string;
   dragEnabled: boolean;
@@ -30,7 +30,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
     this.state = {
       nodes: [],
       startNode: '',
-      selectedNodeIndex: -1,
+      selectedNode: '',
       currentDragItem: -1,
       currentDropTarget: -1,
       dragEnabled: false,
@@ -45,7 +45,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
       this.updateNodes
     );
     this._unregisterLoadListener = getApi().addLoadListener(() =>
-      this.setState({ selectedNodeIndex: -1 })
+      this.setState({ selectedNode: '' })
     );
   }
 
@@ -80,7 +80,10 @@ class Nodes extends React.PureComponent<IProps, IState> {
       .then(api.getNodes)
       .then((nodes: OpusNode[]) => {
         onSelect(nodes[nodes.length - 1]);
-        this.setState({ nodes, selectedNodeIndex: nodes.length - 1 });
+        this.setState({
+          nodes,
+          selectedNode: nodes[nodes.length - 1].name,
+        });
         return true;
       })
       .then(() => {
@@ -98,7 +101,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   removeNode(name: string, index: number): void {
-    const { nodes, selectedNodeIndex } = this.state;
+    const { nodes, selectedNode } = this.state;
     const nodeCandidates = nodes.filter((node) => node.name === name);
     if (nodeCandidates.length === 0) {
       console.log(
@@ -114,20 +117,29 @@ class Nodes extends React.PureComponent<IProps, IState> {
         `${node.data.prompt}\nDo you want to delete this node?`,
         ['Yes', 'No']
       )
+      .then((result) => (result === 0 ? Promise.resolve() : Promise.reject()))
+      .then(() => api.deleteNode(name))
       .then((result) => {
-        if (result === 0) {
-          api.deleteNode(name);
-          // Hack to counter delay
-          setTimeout(() => {
-            if (index === selectedNodeIndex)
-              this.toggleSelect(Math.min(index, nodes.length - 1), true);
-          }, 100);
-          return true;
+        if (result === '') {
+          throw new Error('Unknown error when deleting node');
         }
-        return false;
+        return true;
+      })
+      .then(api.getNodes)
+      .then((updatedNodes) => {
+        if (name === selectedNode)
+          this.toggleSelect(
+            updatedNodes[Math.min(index, updatedNodes.length - 1)].name,
+            true
+          );
+        return true;
       })
       .catch((err) => {
         console.log(`Could not delete node: ${err}`);
+        api.showErrorMessage(
+          'Failed to remove',
+          'Unable to remove item. Please try again'
+        );
       });
   }
 
@@ -145,20 +157,20 @@ class Nodes extends React.PureComponent<IProps, IState> {
     });
   }
 
-  toggleSelect(index: number, forceSelect = false): void {
+  toggleSelect(name: string, forceSelect = false): void {
     const { onSelect } = this.props;
-    const { nodes, selectedNodeIndex } = this.state;
-    const newSelection =
-      selectedNodeIndex === index && !forceSelect ? -1 : index;
-    onSelect(newSelection >= 0 ? nodes[newSelection] : null);
-    this.setState({ selectedNodeIndex: newSelection });
+    const { nodes, selectedNode } = this.state;
+    const newSelection = selectedNode === name && !forceSelect ? '' : name;
+    const nodeCandidates = nodes.filter((n) => n.name === newSelection);
+    onSelect(nodeCandidates.length > 0 ? nodeCandidates[0] : null);
+    this.setState({ selectedNode: newSelection });
   }
 
   render(): JSX.Element {
     const {
       nodes,
       startNode,
-      selectedNodeIndex,
+      selectedNode,
       dragEnabled,
       currentDropTarget,
       currentDragItem,
@@ -166,9 +178,9 @@ class Nodes extends React.PureComponent<IProps, IState> {
 
     return (
       <div
-        className={`NodesList ${
-          selectedNodeIndex >= 0 ? 'ActiveSelection' : ''
-        } ${dragEnabled ? 'Dragging' : ''}`}
+        className={`NodesList ${selectedNode !== '' ? 'ActiveSelection' : ''} ${
+          dragEnabled ? 'Dragging' : ''
+        }`}
       >
         <button
           className="NodeAddButton"
@@ -183,7 +195,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
             <div
               key={node.name}
               className={`NodesNode  ${index % 2 ? 'odd' : 'even'} ${
-                index === selectedNodeIndex ? 'selected' : ''
+                node.name === selectedNode ? 'selected' : ''
               } ${
                 index === currentDropTarget &&
                 currentDropTarget < currentDragItem
@@ -215,7 +227,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
               <div
                 role="presentation"
                 onMouseDown={() => this.setState({ dragEnabled: false })}
-                onClick={this.toggleSelect.bind(this, index, false)}
+                onClick={this.toggleSelect.bind(this, node.name, false)}
               >
                 {node.data.lineNumber
                   ? `${node.data.lineNumber} ${node.data.prompt}`
