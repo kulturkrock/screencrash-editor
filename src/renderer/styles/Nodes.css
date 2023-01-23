@@ -1,5 +1,6 @@
 .NodesList {
   overflow-y:auto;
+  overflow-x: hidden;
   padding: 1em;
   flex: 1;
   border-right: 1px solid;

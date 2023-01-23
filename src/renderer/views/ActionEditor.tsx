@@ -141,7 +141,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
     action: SingleAction,
     index: number,
     paramData: ICommandParameter
-  ): JSX.Element[] {
+  ): JSX.Element {
     const key = `action_${index}_${paramData.name}`;
     const currentValue =
       paramData.name in (action.params || {})
@@ -209,16 +209,18 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
         />
       );
     }
-    let descClass = 'ActionParameterName';
-    if (paramData.required) {
-      descClass += ' RequiredParam';
-    }
-    const description = (
-      <div className={descClass} title={paramData.description}>
-        {paramData.name}:{' '}
+
+    return (
+      <div className="EditField">
+        <div
+          className={`FieldDescription ${paramData.required ? 'Required' : ''}`}
+          title={paramData.description}
+        >
+          {paramData.name}
+        </div>
+        <div className="FieldInput">{form}</div>
       </div>
     );
-    return [description, form];
   }
 
   renderAssetForm(
@@ -229,22 +231,27 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
   ): JSX.Element {
     const { availableAssets } = this.state;
     return (
-      <select
-        key={`action${index}_asset${assetIndex}`}
-        value={assetName}
-        onChange={(event) => this.updateActionData(index, { ...action })}
-      >
-        <option value="">-- None --</option>
-        {availableAssets
-          .filter((asset) => !asset.isInline || asset.name === assetName)
-          .map((asset) => (
-            <option value={asset.name}>
-              {asset.isInline
-                ? `[Inline asset ${getAssetPathName(asset)}]`
-                : asset.name}
-            </option>
-          ))}
-      </select>
+      <div className="EditField">
+        <div className="FieldDescription">Asset {assetIndex + 1}</div>
+        <div className="FieldInput">
+          <select
+            key={`action${index}_asset${assetIndex}`}
+            value={assetName}
+            onChange={(event) => this.updateActionData(index, { ...action })}
+          >
+            <option value="">-- None --</option>
+            {availableAssets
+              .filter((asset) => !asset.isInline || asset.name === assetName)
+              .map((asset) => (
+                <option value={asset.name}>
+                  {asset.isInline
+                    ? `[Inline asset ${getAssetPathName(asset)}]`
+                    : asset.name}
+                </option>
+              ))}
+          </select>
+        </div>
+      </div>
     );
   }
 
@@ -262,10 +269,14 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
           )
         : [];
     const cmdInfo = cmdInfos.length !== 0 ? cmdInfos[0] : undefined;
+    const subcommands =
+      action.target in availableCommands
+        ? availableCommands[action.target]
+        : [];
     return (
       <div key={name}>
         <select
-          value={action.target}
+          value={action.target !== '' ? action.target : 'unknown'}
           onChange={(event) =>
             this.updateActionData(index, {
               ...action,
@@ -292,7 +303,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
           <option value="unknown" disabled>
             -- Select action --
           </option>
-          {availableCommands[action.target].map((command) => (
+          {subcommands.map((command) => (
             <option
               key={command.command}
               value={command.command}
@@ -306,11 +317,18 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
           {(action.assets || []).map(
             this.renderAssetForm.bind(this, action, index)
           )}
+          {action.assets &&
+          cmdInfo &&
+          cmdInfo?.maxNofAssets > action.assets.length ? (
+            <button type="button">Add more assets (TODO)</button>
+          ) : (
+            ''
+          )}
         </div>
         <div className="ActionParameters">
-          {(cmdInfo?.parameters || [])
-            .map(this.renderParamForm.bind(this, action, index))
-            .flat()}
+          {(cmdInfo?.parameters || []).map(
+            this.renderParamForm.bind(this, action, index)
+          )}
         </div>
       </div>
     );
@@ -325,7 +343,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
 
     const header = (
       <div className="HeaderWithButtons">
-        <h3>Edit action</h3>
+        <h3>Properties</h3>
         <button
           type="button"
           className="Abort"

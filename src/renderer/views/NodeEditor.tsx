@@ -139,6 +139,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
     const elements: JSX.Element[] = [];
     elements.push(
       <select
+        className="FieldInputSelectTarget"
         key="select-next-type"
         value={isSimpleNext ? 'simple' : 'conditional'}
         onChange={this.setNextNodeType.bind(this)}
@@ -151,6 +152,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
     if (isSimpleNext) {
       elements.push(
         <select
+          className="FieldInputSelectCommand"
           key="select-next-node"
           value={next}
           onChange={(event) =>
@@ -170,7 +172,7 @@ class NodeEditor extends React.PureComponent<IProps, IState> {
       );
     }
 
-    return <div>{elements}</div>;
+    return <div className="FieldInput">{elements}</div>;
   }
 
   updateAvailableNodes(): void {

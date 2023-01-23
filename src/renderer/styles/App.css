@@ -51,12 +51,16 @@ select, option {
   cursor: default;
   margin-bottom: 0.3em;
 }
+.FieldDescription.Required {
+  font-weight: bold;
+}
 .FieldInput {
   display: flex;
   width: 100%;
 }
 .FieldInput * {
   flex: 1;
+  width: 100%;
 }
 
 

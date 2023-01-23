@@ -1,0 +1,71 @@
+.Preview {
+  padding: 2em 2em;
+}
+
+.PropertiesElement {
+  border: 1px solid;
+  margin-bottom: 1em;
+}
+.PropertiesElement:hover {
+  background: #ffffff30;
+  cursor:pointer;
+}
+.PropertiesElement.Selected, .PropertiesElement.Selected:hover {
+  background: #ffffff20;
+}
+.PropertiesElement.NewItem {
+  margin-top: 3em;
+}
+.PropertiesElement.NewItem, .PropertiesElement.NewItem .PropertiesElementHeader {
+  border-style: dashed;
+}
+.PropertiesElementHeader {
+  font-size: 0.7em;
+  font-variant: small-caps;
+  padding: 0.5em 0em 0.5em 1em;
+  border-width: 0px;
+  border-bottom: 1px solid;
+}
+.PropertiesElementBody {
+  padding: 1em;
+}
+.PropertiesElementHeader.WithActions {
+  display: flex;
+  padding: 0em 0em 0em 1em;
+}
+.PropertiesElementHeader.WithActions div:first-of-type {
+  flex: 1;
+  padding: 0.5em 0em 0.5em 0em;
+}
+.PropertiesElementHeader.WithActions div:not(:first-of-type) {
+  border-left: 1px solid;
+  padding: 0.6em 2em 0.4em 2em;
+}
+.RemoveActionButton:hover {
+  cursor: pointer;
+  background: darkred;
+}
+.PlayActionButton:hover {
+  cursor: pointer;
+  background: darkgreen;
+}
+
+.NodeProperties {
+  display: flex;
+  align-items: center;
+}
+.NodeProperties h3 {
+  margin-top: 0em;
+}
+.NodePropertiesPrompt {
+  flex: 1;
+}
+.NodePropertiesNextBtn {
+  padding: 0.5em 2em;
+  border: 1px solid #888888;
+  border-radius: 0.3em;
+}
+.NodePropertiesNextBtn:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}

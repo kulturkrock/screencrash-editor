@@ -14,6 +14,7 @@ export const CHECK_NODE_EXISTS = 'node_exists';
 export const UPDATE_NODE = 'update_node';
 export const UPDATE_ACTION = 'update_action';
 export const DELETE_NODE = 'delete_node';
+export const DELETE_ACTION = 'delete_action';
 
 export const LIST_COMMANDS = 'list_commands';
 export const RELOAD_COMMANDS = 'reload_commands';
@@ -37,6 +38,7 @@ export type Channels =
   | 'update_node'
   | 'update_action'
   | 'delete_node'
+  | 'delete_action'
   | 'list_commands'
   | 'reload_commands'
   | 'show_dialog'

@@ -3,6 +3,7 @@ import {
   ASSETS_CHANGED,
   Channels,
   CHECK_NODE_EXISTS,
+  DELETE_ACTION,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -60,6 +61,7 @@ interface IApi {
   ) => Promise<string>;
 
   deleteNode: (name: string) => Promise<string>;
+  deleteAction: (name: string) => Promise<string>;
 
   getAvailableCommands: () => Promise<{ [component: string]: ICommand[] }>;
 
@@ -177,6 +179,12 @@ class Api implements IApi {
   // eslint-disable-next-line class-methods-use-this
   async deleteNode(name: string): Promise<string> {
     const args = await callIpc(DELETE_NODE, name);
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async deleteAction(name: string): Promise<string> {
+    const args = await callIpc(DELETE_ACTION, name);
     return args[0] as string;
   }
 

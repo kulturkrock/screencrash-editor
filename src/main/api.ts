@@ -5,6 +5,7 @@ import {
   ASSETS_CHANGED,
   Channels,
   CHECK_NODE_EXISTS,
+  DELETE_ACTION,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -56,6 +57,7 @@ interface IApi {
   ) => string;
 
   deleteNode: (name: string) => string;
+  deleteAction: (name: string) => string;
 }
 
 class Api implements IApi {
@@ -248,6 +250,12 @@ class Api implements IApi {
     if (opus && opus.deleteNode(name)) return name;
     return '';
   }
+
+  deleteAction(name: string): string {
+    const opus = Model.getOpus();
+    if (opus && opus.deleteAction(name)) return name;
+    return '';
+  }
 }
 
 const CURRENT_API = new Api();
@@ -333,6 +341,12 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     const name = args[0] as string;
     const result = CURRENT_API.deleteNode(name);
     event.reply(DELETE_NODE, result);
+  });
+
+  ipcMain.on(DELETE_ACTION, (event, args) => {
+    const name = args[0] as string;
+    const result = CURRENT_API.deleteAction(name);
+    event.reply(DELETE_ACTION, result);
   });
 
   ipcMain.on(LIST_COMMANDS, (event) => {

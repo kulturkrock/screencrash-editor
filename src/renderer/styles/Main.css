@@ -12,3 +12,10 @@
   align-items: center;
   font-size: 2.5em;
 }
+
+.AttributeEditor {
+  padding: 0em 1em;
+  border-left: 1px solid;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

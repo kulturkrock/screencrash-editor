@@ -59,9 +59,15 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   updateNodes(): void {
+    const { onSelect } = this.props;
+    const { selectedNode } = this.state;
     getApi()
       .getNodes()
       .then((nodes: OpusNode[]) => {
+        const candidates = nodes.filter((node) => node.name === selectedNode);
+        if (selectedNode !== '' && candidates.length > 0) {
+          onSelect(candidates[0]);
+        }
         this.setState({ nodes });
         return true;
       })

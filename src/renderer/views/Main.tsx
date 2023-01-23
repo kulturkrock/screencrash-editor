@@ -14,6 +14,7 @@ import AttributeEditor from './AttributeEditor';
 interface IState {
   isLoaded: boolean;
   currentNode: OpusNode | null;
+  selectedAction: string | null;
 }
 
 class Main extends React.PureComponent<IEmpty, IState> {
@@ -21,7 +22,7 @@ class Main extends React.PureComponent<IEmpty, IState> {
 
   constructor(props: IEmpty) {
     super(props);
-    this.state = { isLoaded: false, currentNode: null };
+    this.state = { isLoaded: false, currentNode: null, selectedAction: null };
   }
 
   componentDidMount(): void {
@@ -39,7 +40,7 @@ class Main extends React.PureComponent<IEmpty, IState> {
   }
 
   render(): JSX.Element {
-    const { isLoaded, currentNode } = this.state;
+    const { isLoaded, currentNode, selectedAction } = this.state;
     if (!isLoaded) {
       return <div className="MainNoOpus">Load or create an opus to start</div>;
     }
@@ -47,8 +48,12 @@ class Main extends React.PureComponent<IEmpty, IState> {
     return (
       <div className="Main">
         <Nodes onSelect={(node) => this.setState({ currentNode: node })} />
-        <Preview node={currentNode} />
-        <AttributeEditor node={currentNode} />
+        <Preview
+          node={currentNode}
+          onSelectAction={(action) => this.setState({ selectedAction: action })}
+          onSelectNode={(node) => this.setState({ currentNode: node })}
+        />
+        <AttributeEditor node={currentNode} action={selectedAction} />
       </div>
     );
   }

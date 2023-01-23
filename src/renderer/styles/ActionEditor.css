@@ -1,27 +1,8 @@
 
-.ActionEditor ~ .ActionEditor {
-  margin-top: 1em;
-  padding-top: 1em;
-  border-top: 1px solid white;
-}
-
 .ActionAssets {
   margin-top: 1em;
 }
 
 div.ActionParameters {
-  display: grid;
-  align-items: center;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(auto-fill, 2em);
-  column-gap: 0.5em;
-  row-gap: 0.2em;
   margin-top: 0.5em;
-}
-div.ActionParameterName:hover {
-  cursor: default;
-}
-
-div.ActionParameterName.RequiredParam {
-  font-weight: bold;
 }
