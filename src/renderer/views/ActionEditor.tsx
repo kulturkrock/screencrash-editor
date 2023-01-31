@@ -211,7 +211,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
     }
 
     return (
-      <div className="EditField">
+      <div className="EditField" key={`action${index}_param${paramData.name}`}>
         <div
           className={`FieldDescription ${paramData.required ? 'Required' : ''}`}
           title={paramData.description}
@@ -231,7 +231,7 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
   ): JSX.Element {
     const { availableAssets } = this.state;
     return (
-      <div className="EditField">
+      <div className="EditField" key={`action${index}_asset${assetIndex}`}>
         <div className="FieldDescription">Asset {assetIndex + 1}</div>
         <div className="FieldInput">
           <select

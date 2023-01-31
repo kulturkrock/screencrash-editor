@@ -1,5 +1,7 @@
 export const GET_LOADING_TEXT = 'get_loading_text';
 export const OPEN_OPUS = 'open_opus';
+export const SAVE_OPUS = 'save_opus';
+
 export const LOADED_CHANGED = 'loaded_changed';
 export const NODES_CHANGED = 'nodes_changed';
 export const ASSETS_CHANGED = 'assets_changed';
@@ -25,6 +27,7 @@ export const SHOW_ASK_DIALOG = 'show_ask_dialog';
 export type Channels =
   | 'get_loading_text'
   | 'open_opus'
+  | 'save_opus'
   | 'loaded_changed'
   | 'nodes_changed'
   | 'assets_changed'

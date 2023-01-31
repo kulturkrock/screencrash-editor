@@ -155,6 +155,7 @@ class Preview extends React.PureComponent<IProps, IState> {
               Next:{' '}
               {listOfNextNodes.map((nodeName) => (
                 <button
+                  key={`next_button_${nodeName}`}
                   className="NodePropertiesNextBtn"
                   type="button"
                   onClick={(e) => {
@@ -170,6 +171,7 @@ class Preview extends React.PureComponent<IProps, IState> {
         </div>
         {(node.data.actions || []).map((actionName) => (
           <div
+            key={`preview_action_${actionName}`}
             className={`PropertiesElement ${
               selectedAction === actionName ? 'Selected' : ''
             }`}

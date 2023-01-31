@@ -15,6 +15,7 @@ import {
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
+  SAVE_OPUS,
   SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
@@ -43,6 +44,9 @@ interface IApi {
   addChangeListener(expected_type: ChangeType, func: () => void): () => void;
 
   openOpus: () => Promise<boolean>;
+  saveOpus: () => Promise<boolean>;
+  saveOpusAs: (file: string | null) => Promise<boolean>;
+
   getNodes: () => Promise<OpusNode[]>;
   getStartNode: () => Promise<string>;
   getActions: () => Promise<Action[]>;
@@ -109,6 +113,18 @@ class Api implements IApi {
   // eslint-disable-next-line class-methods-use-this
   async openOpus(): Promise<boolean> {
     const args = await callIpc(OPEN_OPUS, null);
+    return args[0] as boolean;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async saveOpus(): Promise<boolean> {
+    const args = await callIpc(SAVE_OPUS);
+    return args[0] as boolean;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async saveOpusAs(file: string | null = null): Promise<boolean> {
+    const args = await callIpc(SAVE_OPUS, file);
     return args[0] as boolean;
   }
 

@@ -154,7 +154,6 @@ export function reloadCommands() {
     const data = JSON.parse(rawData.toString('utf8'));
     addCommandsFrom(data);
   });
-  console.log(JSON.stringify(commands.audio, null, 4));
 }
 
 export function getAvailableCommands() {

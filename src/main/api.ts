@@ -18,6 +18,7 @@ import {
   NODES_CHANGED,
   OPEN_OPUS,
   RELOAD_COMMANDS,
+  SAVE_OPUS,
   SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
@@ -304,6 +305,17 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     const file = args.length > 0 ? args[0] : null;
     const success = await CURRENT_API.openOpus(file);
     event.reply(OPEN_OPUS, success);
+  });
+
+  ipcMain.on(SAVE_OPUS, async (event, args) => {
+    let success = false;
+    if (args.length > 0) {
+      const file = args[0] as string;
+      success = await CURRENT_API.saveOpusAs(file);
+    } else {
+      success = await CURRENT_API.saveOpus();
+    }
+    event.reply(SAVE_OPUS, success);
   });
 
   ipcMain.on(CHECK_NODE_EXISTS, (event, args) => {

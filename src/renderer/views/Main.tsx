@@ -10,6 +10,7 @@ import { OpusNode } from '../../main/model/node';
 import Nodes from './Nodes';
 import Preview from './Preview';
 import AttributeEditor from './AttributeEditor';
+import Toolbar from './Toolbar';
 
 interface IState {
   isLoaded: boolean;
@@ -42,18 +43,29 @@ class Main extends React.PureComponent<IEmpty, IState> {
   render(): JSX.Element {
     const { isLoaded, currentNode, selectedAction } = this.state;
     if (!isLoaded) {
-      return <div className="MainNoOpus">Load or create an opus to start</div>;
+      return (
+        <div className="Main">
+          <Toolbar />
+          <div className="MainNoOpus">Load or create an opus to start</div>
+        </div>
+      );
     }
 
     return (
       <div className="Main">
-        <Nodes onSelect={(node) => this.setState({ currentNode: node })} />
-        <Preview
-          node={currentNode}
-          onSelectAction={(action) => this.setState({ selectedAction: action })}
-          onSelectNode={(node) => this.setState({ currentNode: node })}
-        />
-        <AttributeEditor node={currentNode} action={selectedAction} />
+        <Toolbar />
+
+        <div className="MainContent">
+          <Nodes onSelect={(node) => this.setState({ currentNode: node })} />
+          <Preview
+            node={currentNode}
+            onSelectAction={(action) =>
+              this.setState({ selectedAction: action })
+            }
+            onSelectNode={(node) => this.setState({ currentNode: node })}
+          />
+          <AttributeEditor node={currentNode} action={selectedAction} />
+        </div>
       </div>
     );
   }

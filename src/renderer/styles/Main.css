@@ -1,7 +1,54 @@
 .Main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.MainToolbar {
+  flex: 0;
+  display: flex;
+  /*border-bottom: 1px solid;*/
+  box-shadow: -10px 7px 10px -10px #000000B0, 10px 7px 10px -10px #000000B0;
+}
+.MainToolbar .ToolbarButton {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  height: 54px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1em;
+  padding: 0.5em;
+}
+.MainToolbar .ToolbarButton:disabled {
+  opacity: 0.7;
+}
+.MainToolbar .ToolbarButton:hover:not(:disabled) {
+  cursor: pointer;
+  background: #ffffff20;
+}
+.MainToolbar .ToolbarButton:active:not(:disabled) {
+  cursor: pointer;
+  background: #ffffff40;
+}
+.MainToolbar .ToolbarButton > svg {
+  font-size: 2em;
+}
+.MainToolbar .ToolbarButton > div {
+  margin-top: 0.4em;
+  font-size: 0.8em;
+}
+.MainToolbar .ToolbarSeparator {
+  border-right: 1px solid;
+  margin: 0em 0.5em;
+}
+
+.MainContent {
+  flex: 1;
   display: grid;
   grid-template-columns: 1fr 3fr 1fr;
-  height: 100vh;
+  padding-bottom: 1px;
   overflow: hidden;
 }
 
