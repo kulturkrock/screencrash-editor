@@ -56,7 +56,10 @@ class Main extends React.PureComponent<IEmpty, IState> {
         <Toolbar />
 
         <div className="MainContent">
-          <Nodes onSelect={(node) => this.setState({ currentNode: node })} />
+          <Nodes
+            selectedNode={currentNode ? currentNode.name : ''}
+            onSelect={(node) => this.setState({ currentNode: node })}
+          />
           <Preview
             node={currentNode}
             onSelectAction={(action) =>

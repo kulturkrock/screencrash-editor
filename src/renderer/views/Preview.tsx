@@ -35,7 +35,6 @@ class Preview extends React.PureComponent<IProps, IState> {
   }
 
   gotoNode(nodeName: string): void {
-    /*
     const { onSelectNode } = this.props;
     getApi()
       .getNodes()
@@ -50,7 +49,6 @@ class Preview extends React.PureComponent<IProps, IState> {
       .catch((error) => {
         console.log(`Failed to go to node ${nodeName}: ${error}`);
       });
-      */
   }
 
   // eslint-disable-next-line class-methods-use-this

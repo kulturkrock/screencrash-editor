@@ -8,11 +8,11 @@ import { ChangeType, getApi } from '../util/backend';
 import { OpusNode } from '../../main/model/node';
 
 interface IProps {
+  selectedNode: string;
   onSelect: (node: OpusNode | null) => void;
 }
 
 interface IState {
-  selectedNode: string;
   nodes: OpusNode[];
   startNode: string;
   dragEnabled: boolean;
@@ -30,7 +30,6 @@ class Nodes extends React.PureComponent<IProps, IState> {
     this.state = {
       nodes: [],
       startNode: '',
-      selectedNode: '',
       currentDragItem: -1,
       currentDropTarget: -1,
       dragEnabled: false,
@@ -44,9 +43,10 @@ class Nodes extends React.PureComponent<IProps, IState> {
       ChangeType.Nodes,
       this.updateNodes
     );
-    this._unregisterLoadListener = getApi().addLoadListener(() =>
-      this.setState({ selectedNode: '' })
-    );
+    this._unregisterLoadListener = getApi().addLoadListener(() => {
+      const { onSelect } = this.props;
+      onSelect(null);
+    });
   }
 
   componentWillUnmount(): void {
@@ -59,8 +59,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   updateNodes(): void {
-    const { onSelect } = this.props;
-    const { selectedNode } = this.state;
+    const { onSelect, selectedNode } = this.props;
     getApi()
       .getNodes()
       .then((nodes: OpusNode[]) => {
@@ -85,11 +84,8 @@ class Nodes extends React.PureComponent<IProps, IState> {
       .createNode()
       .then(api.getNodes)
       .then((nodes: OpusNode[]) => {
+        this.setState({ nodes });
         onSelect(nodes[nodes.length - 1]);
-        this.setState({
-          nodes,
-          selectedNode: nodes[nodes.length - 1].name,
-        });
         return true;
       })
       .then(() => {
@@ -107,7 +103,8 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   removeNode(name: string, index: number): void {
-    const { nodes, selectedNode } = this.state;
+    const { selectedNode } = this.props;
+    const { nodes } = this.state;
     const nodeCandidates = nodes.filter((node) => node.name === name);
     if (nodeCandidates.length === 0) {
       console.log(
@@ -164,19 +161,18 @@ class Nodes extends React.PureComponent<IProps, IState> {
   }
 
   toggleSelect(name: string, forceSelect = false): void {
-    const { onSelect } = this.props;
-    const { nodes, selectedNode } = this.state;
+    const { onSelect, selectedNode } = this.props;
+    const { nodes } = this.state;
     const newSelection = selectedNode === name && !forceSelect ? '' : name;
     const nodeCandidates = nodes.filter((n) => n.name === newSelection);
     onSelect(nodeCandidates.length > 0 ? nodeCandidates[0] : null);
-    this.setState({ selectedNode: newSelection });
   }
 
   render(): JSX.Element {
+    const { selectedNode } = this.props;
     const {
       nodes,
       startNode,
-      selectedNode,
       dragEnabled,
       currentDropTarget,
       currentDragItem,
