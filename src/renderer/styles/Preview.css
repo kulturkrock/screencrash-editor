@@ -69,3 +69,27 @@
   opacity: 0.8;
   cursor: pointer;
 }
+
+
+.PreviewWrapper {
+  display: flex;
+  align-items: center;
+}
+.FlexFiller {
+  flex: 1;
+}
+.PreviewElement {
+  width: 50%;
+}
+.SmallPreviewElement {
+  flex: 0;
+}
+.SmallPreviewElement > .PreviewElement {
+  width: auto;
+  height: 50px;
+}
+.HighlightedName {
+  background-color: #00000030;
+  border-radius: 4px;
+  padding: 2px 4px 4px 4px;
+}

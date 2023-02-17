@@ -1,3 +1,4 @@
+import path from 'path';
 import { EventEmitter } from 'stream';
 import Opus from './opus';
 
@@ -41,6 +42,13 @@ class Model extends EventEmitter implements IModel {
 
   hasLoaded(): boolean {
     return this.currentFile !== '';
+  }
+
+  getResourceFolder(): string {
+    if (this.hasLoaded()) {
+      return path.dirname(this.currentFile);
+    }
+    return '';
   }
 
   new(file: string): boolean {

@@ -60,6 +60,10 @@
   font-size: 2.5em;
 }
 
+.Preview {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 .AttributeEditor {
   padding: 0em 1em;
   border-left: 1px solid;

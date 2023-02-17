@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, dialog, shell } from 'electron';
+import { app, BrowserWindow, dialog, protocol, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -162,9 +162,21 @@ app.on('window-all-closed', () => {
   }
 });
 
+const fileHandler = (
+  req: Electron.ProtocolRequest,
+  callback: (response: string | Electron.ProtocolResponse) => void
+) => {
+  const requestedPath = req.url.replace('screencrash:///', '');
+  const fullPath = `${getApi().getResourceFolder()}/${requestedPath}`;
+  console.log(`Returning file path '${fullPath}'`);
+  callback({ path: fullPath });
+};
+
 app
   .whenReady()
   .then(() => {
+    protocol.registerFileProtocol('screencrash', fileHandler);
+
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

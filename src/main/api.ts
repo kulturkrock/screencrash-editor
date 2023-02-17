@@ -40,6 +40,7 @@ interface IApi {
   saveOpus: () => Promise<boolean>;
   saveOpusAs: (file: string | null) => Promise<boolean>;
   unloadOpus: () => Promise<boolean>;
+  getResourceFolder: () => string;
 
   getNodes: () => OpusNode[];
   getActions: () => Action[];
@@ -179,6 +180,10 @@ class Api implements IApi {
       return false;
     }
     return Model.save(fileToSave);
+  }
+
+  getResourceFolder(): string {
+    return Model.getResourceFolder();
   }
 
   getNodes(): OpusNode[] {
