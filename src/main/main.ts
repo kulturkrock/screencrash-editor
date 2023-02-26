@@ -166,8 +166,11 @@ const fileHandler = (
   req: Electron.ProtocolRequest,
   callback: (response: string | Electron.ProtocolResponse) => void
 ) => {
-  const requestedPath = req.url.replace('screencrash:///', '');
-  const fullPath = `${getApi().getResourceFolder()}/${requestedPath}`;
+  const requestedPath = decodeURI(req.url.replace('screencrash:///', ''));
+  const resourceFolder = getApi().getResourceFolder();
+  const fullPath = requestedPath.startsWith(resourceFolder)
+    ? requestedPath
+    : `${resourceFolder}/${requestedPath}`;
   console.log(`Returning file path '${fullPath}'`);
   callback({ path: fullPath });
 };

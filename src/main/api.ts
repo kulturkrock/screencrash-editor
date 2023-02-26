@@ -1,11 +1,12 @@
 /* eslint-disable class-methods-use-this */
-import { BrowserWindow, dialog, ipcMain } from 'electron';
+import { BrowserWindow, dialog, FileFilter, ipcMain } from 'electron';
 import {
   ACTIONS_CHANGED,
   ASSETS_CHANGED,
   Channels,
   CHECK_NODE_EXISTS,
   DELETE_ACTION,
+  DELETE_ASSET,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -17,15 +18,17 @@ import {
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
+  PROMPT_FILES,
   RELOAD_COMMANDS,
   SAVE_OPUS,
   SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
+  UPDATE_ASSET,
   UPDATE_NODE,
 } from './channels';
 import { Action, ActionData } from './model/action';
-import { Asset } from './model/asset';
+import { Asset, AssetData } from './model/asset';
 import { getAvailableCommands, reloadCommands } from './model/commands';
 import Model from './model/model';
 import { OpusNode, OpusNodeData } from './model/node';
@@ -57,9 +60,15 @@ interface IApi {
     data: ActionData,
     useInline: boolean
   ) => string;
+  updateAsset: (
+    name: string | null,
+    data: AssetData,
+    useInline: boolean
+  ) => string;
 
   deleteNode: (name: string) => string;
   deleteAction: (name: string) => string;
+  deleteAsset: (name: string) => string;
 }
 
 class Api implements IApi {
@@ -251,6 +260,16 @@ class Api implements IApi {
     return '';
   }
 
+  updateAsset(
+    name: string | null,
+    data: AssetData,
+    useInline: boolean
+  ): string {
+    const opus = Model.getOpus();
+    if (opus) return opus.updateAsset(name, useInline, data);
+    return '';
+  }
+
   deleteNode(name: string): string {
     const opus = Model.getOpus();
     if (opus && opus.deleteNode(name)) return name;
@@ -260,6 +279,12 @@ class Api implements IApi {
   deleteAction(name: string): string {
     const opus = Model.getOpus();
     if (opus && opus.deleteAction(name)) return name;
+    return '';
+  }
+
+  deleteAsset(name: string): string {
+    const opus = Model.getOpus();
+    if (opus && opus.deleteAsset(name)) return name;
     return '';
   }
 }
@@ -296,6 +321,33 @@ const showOKDialog = (
     actualType = 'info';
   }
   dialog.showMessageBoxSync(win, { type: actualType, title, message });
+};
+
+const promptFiles = (
+  win: BrowserWindow,
+  title: string,
+  fileFormats: string[],
+  allowMultiple: boolean
+): string[] => {
+  const filters: FileFilter[] =
+    fileFormats.length > 0
+      ? [{ name: 'Allowed files', extensions: fileFormats }]
+      : [];
+  let result: string[] | undefined = [];
+  if (allowMultiple) {
+    result = dialog.showOpenDialogSync(win, {
+      title,
+      filters,
+      properties: ['openFile', 'multiSelections'],
+    });
+  } else {
+    result = dialog.showOpenDialogSync(win, {
+      title,
+      filters,
+      properties: ['openFile'],
+    });
+  }
+  return result || [];
 };
 
 const initApiCommunication = (mainWindow: BrowserWindow): void => {
@@ -354,6 +406,19 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     event.reply(UPDATE_ACTION, result);
   });
 
+  ipcMain.on(UPDATE_ASSET, (event, args) => {
+    if (args.length < 2) {
+      console.log(`Got ${args.length} arguments, expected at least 2`);
+      event.reply(UPDATE_ASSET, '');
+      return;
+    }
+    const name = args[0] as string | null;
+    const data = args[1] as AssetData;
+    const useInline = args.length > 2 ? (args[2] as boolean) : false;
+    const result = CURRENT_API.updateAsset(name, data, useInline);
+    event.reply(UPDATE_ASSET, result);
+  });
+
   ipcMain.on(DELETE_NODE, (event, args) => {
     const name = args[0] as string;
     const result = CURRENT_API.deleteNode(name);
@@ -364,6 +429,12 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     const name = args[0] as string;
     const result = CURRENT_API.deleteAction(name);
     event.reply(DELETE_ACTION, result);
+  });
+
+  ipcMain.on(DELETE_ASSET, (event, args) => {
+    const name = args[0] as string;
+    const result = CURRENT_API.deleteAsset(name);
+    event.reply(DELETE_ASSET, result);
   });
 
   ipcMain.on(LIST_COMMANDS, (event) => {
@@ -397,6 +468,18 @@ const initApiCommunication = (mainWindow: BrowserWindow): void => {
     const message = args[2] as string;
     showOKDialog(mainWindow, type, title, message);
     event.reply(SHOW_DIALOG, true);
+  });
+
+  ipcMain.on(PROMPT_FILES, async (event, args) => {
+    if (args.length !== 3) {
+      event.reply(SHOW_DIALOG, []);
+      return;
+    }
+    const title = args[0] as string;
+    const fileFormats = (args[1] || []) as string[];
+    const allowMultiple = args[2] as boolean;
+    const result = promptFiles(mainWindow, title, fileFormats, allowMultiple);
+    event.reply(PROMPT_FILES, result);
   });
 
   Model.addListener('loaded', (...args: unknown[]) => {

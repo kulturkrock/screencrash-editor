@@ -170,7 +170,12 @@ class Preview extends React.PureComponent<IProps, IState> {
     }
     if (action.target === 'audio') {
       return (
-        <AudioPreview key={`action_${actionName}_${index}`} action={action} />
+        <AudioPreview
+          key={`action_${actionName}_${index}`}
+          action={action}
+          assetLookup={this.getAssetByName}
+          entityToAsset={this.getAssetNameFromEntity}
+        />
       );
     }
     if (action.target === 'video') {

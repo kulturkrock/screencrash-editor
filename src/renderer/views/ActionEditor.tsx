@@ -1,10 +1,17 @@
 import * as React from 'react';
-import { ChangeType, getApi } from '../util/backend';
+import {
+  FaTrashAlt,
+  FaRegFileAudio,
+  FaRegFileVideo,
+  FaRegFileImage,
+  FaRegFileAlt,
+} from 'react-icons/fa';
 
 import '../styles/ActionEditor.css';
 import { ActionData, SingleAction } from '../../main/model/action';
 import { ICommand, ICommandParameter } from '../../main/model/commands';
 import { Asset } from '../../main/model/asset';
+import { ChangeType, getApi } from '../util/backend';
 
 interface IProps {
   actionName: string;
@@ -19,7 +26,9 @@ interface IState {
 
 function getAssetPathName(asset: Asset): string {
   const { path } = asset.data;
-  return path.substring(path.lastIndexOf('/') + 1);
+  let res = path.substring(path.lastIndexOf('/') + 1);
+  res = res.substring(path.lastIndexOf('\\') + 1);
+  return res;
 }
 
 class ActionEditor extends React.PureComponent<IProps, IState> {
@@ -59,6 +68,20 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
   componentWillUnmount(): void {
     if (this._unregisterUpdates) {
       this._unregisterUpdates();
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getAddIcon(cmdType: string): JSX.Element {
+    switch (cmdType) {
+      case 'action':
+        return <FaRegFileAudio />;
+      case 'image':
+        return <FaRegFileImage />;
+      case 'video':
+        return <FaRegFileVideo />;
+      default:
+        return <FaRegFileAlt />;
     }
   }
 
@@ -134,6 +157,32 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
           console.log(`Failed to notify user about error due to ${reason}`);
         });
     }
+  }
+
+  addAsset(action: SingleAction, index: number) {
+    const api = getApi();
+    let selectedFile = '';
+    api
+      .selectFiles('Select asset file', null, false)
+      .then((files) => {
+        if (files.length === 0) throw Error('User seem to have aborted');
+        [selectedFile] = files;
+        return 0;
+      })
+      .then(() => api.createAsset())
+      .then((assetName) =>
+        api.updateAsset(assetName, { path: selectedFile }, true)
+      )
+      .then((assetName) => {
+        this.updateActionData(index, {
+          ...action,
+          assets: (action.assets || []).concat([assetName]),
+        });
+        return true;
+      })
+      .catch((reason) => {
+        console.log(`No asset added: ${reason}`);
+      });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -230,26 +279,23 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
     assetIndex: number
   ): JSX.Element {
     const { availableAssets } = this.state;
+    const asset = availableAssets.filter((a) => a.name === assetName).at(0);
     return (
       <div className="EditField" key={`action${index}_asset${assetIndex}`}>
         <div className="FieldDescription">Asset {assetIndex + 1}</div>
-        <div className="FieldInput">
-          <select
-            key={`action${index}_asset${assetIndex}`}
-            value={assetName}
-            onChange={(event) => this.updateActionData(index, { ...action })}
-          >
-            <option value="">-- None --</option>
-            {availableAssets
-              .filter((asset) => !asset.isInline || asset.name === assetName)
-              .map((asset) => (
-                <option value={asset.name}>
-                  {asset.isInline
-                    ? `[Inline asset ${getAssetPathName(asset)}]`
-                    : asset.name}
-                </option>
-              ))}
-          </select>
+        <div className="FieldInput Asset">
+          <div>{asset ? getAssetPathName(asset) : 'Could not find asset'}</div>
+          <FaTrashAlt
+            className="AssetRemoveButton"
+            onClick={() => {
+              const newAssets = action.assets?.slice() || [];
+              newAssets.splice(assetIndex);
+              this.updateActionData(index, {
+                ...action,
+                assets: newAssets,
+              });
+            }}
+          />
         </div>
       </div>
     );
@@ -320,7 +366,9 @@ class ActionEditor extends React.PureComponent<IProps, IState> {
           {action.assets &&
           cmdInfo &&
           cmdInfo?.maxNofAssets > action.assets.length ? (
-            <button type="button">Add more assets (TODO)</button>
+            <button type="button" onClick={() => this.addAsset(action, index)}>
+              {this.getAddIcon(action.cmd || '')} Add asset
+            </button>
           ) : (
             ''
           )}

@@ -6,3 +6,18 @@
 div.ActionParameters {
   margin-top: 0.5em;
 }
+
+.FieldInput.Asset div {
+  flex: 1;
+}
+.AssetRemoveButton {
+  flex: 1;
+  font-size: 1em;
+  color: white;
+  max-width: 16px;
+  padding: 10px 10px;
+}
+.AssetRemoveButton:hover {
+  background: darkred;
+  cursor: pointer;
+}

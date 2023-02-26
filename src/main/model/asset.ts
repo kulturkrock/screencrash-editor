@@ -23,6 +23,10 @@ export class Asset implements NamedSaveable {
     return data as AssetData;
   }
 
+  static getEmptyAssetData(): AssetData {
+    return { path: '' };
+  }
+
   canBeSaved(): boolean {
     return !this.isInline;
   }

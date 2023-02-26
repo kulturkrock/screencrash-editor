@@ -4,6 +4,7 @@ import {
   Channels,
   CHECK_NODE_EXISTS,
   DELETE_ACTION,
+  DELETE_ASSET,
   DELETE_NODE,
   GET_ACTIONS,
   GET_ACTION_DESCRIPTIONS,
@@ -15,15 +16,17 @@ import {
   LOADED_CHANGED,
   NODES_CHANGED,
   OPEN_OPUS,
+  PROMPT_FILES,
   SAVE_OPUS,
   SHOW_ASK_DIALOG,
   SHOW_DIALOG,
   UPDATE_ACTION,
+  UPDATE_ASSET,
   UPDATE_NODE,
 } from '../../main/channels';
 
 import { Action, ActionData } from '../../main/model/action';
-import { Asset } from '../../main/model/asset';
+import { Asset, AssetData } from '../../main/model/asset';
 import { ICommand } from '../../main/model/commands';
 import { OpusNode, OpusNodeData } from '../../main/model/node';
 
@@ -55,6 +58,7 @@ interface IApi {
 
   createNode: () => Promise<string>;
   createAction: () => Promise<string>;
+  createAsset: () => Promise<string>;
 
   nodeExists: (name: string) => Promise<boolean>;
   updateNode: (name: string | null, data: OpusNodeData) => Promise<string>;
@@ -63,9 +67,15 @@ interface IApi {
     data: ActionData,
     useInline: boolean
   ) => Promise<string>;
+  updateAsset: (
+    name: string | null,
+    data: AssetData,
+    useInline: boolean
+  ) => Promise<string>;
 
   deleteNode: (name: string) => Promise<string>;
   deleteAction: (name: string) => Promise<string>;
+  deleteAsset: (name: string) => Promise<string>;
 
   getAvailableCommands: () => Promise<{ [component: string]: ICommand[] }>;
 
@@ -73,6 +83,11 @@ interface IApi {
   showInfoMessage: (title: string, message: string) => Promise<boolean>;
   showWarningMessage: (title: string, message: string) => Promise<boolean>;
   showErrorMessage: (title: string, message: string) => Promise<boolean>;
+  selectFiles: (
+    title: string,
+    fileFormats: string[] | null,
+    allowMultiple: boolean
+  ) => Promise<string[]>;
 }
 
 function callIpc(channel: Channels, ...args: unknown[]): Promise<unknown[]> {
@@ -171,6 +186,12 @@ class Api implements IApi {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  async createAsset(): Promise<string> {
+    const assetData = Asset.getEmptyAssetData();
+    return this.updateAsset(null, assetData, false);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   async nodeExists(name: string): Promise<boolean> {
     const args = await callIpc(CHECK_NODE_EXISTS, name);
     return args[0] as boolean;
@@ -193,6 +214,16 @@ class Api implements IApi {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  async updateAsset(
+    name: string | null,
+    data: AssetData,
+    useInline: boolean
+  ): Promise<string> {
+    const args = await callIpc(UPDATE_ASSET, name, data, useInline);
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   async deleteNode(name: string): Promise<string> {
     const args = await callIpc(DELETE_NODE, name);
     return args[0] as string;
@@ -201,6 +232,12 @@ class Api implements IApi {
   // eslint-disable-next-line class-methods-use-this
   async deleteAction(name: string): Promise<string> {
     const args = await callIpc(DELETE_ACTION, name);
+    return args[0] as string;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async deleteAsset(name: string): Promise<string> {
+    const args = await callIpc(DELETE_ASSET, name);
     return args[0] as string;
   }
 
@@ -236,6 +273,16 @@ class Api implements IApi {
   async showErrorMessage(title: string, message: string): Promise<boolean> {
     const args = await callIpc(SHOW_DIALOG, 'error', title, message);
     return args[0] as boolean;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async selectFiles(
+    title: string,
+    fileFormats: string[] | null,
+    allowMultiple: boolean
+  ): Promise<string[]> {
+    const args = await callIpc(PROMPT_FILES, title, fileFormats, allowMultiple);
+    return args[0] as string[];
   }
 }
 

@@ -15,14 +15,17 @@ export const GET_ASSETS = 'get_assets';
 export const CHECK_NODE_EXISTS = 'node_exists';
 export const UPDATE_NODE = 'update_node';
 export const UPDATE_ACTION = 'update_action';
+export const UPDATE_ASSET = 'update_asset';
 export const DELETE_NODE = 'delete_node';
 export const DELETE_ACTION = 'delete_action';
+export const DELETE_ASSET = 'delete_asset';
 
 export const LIST_COMMANDS = 'list_commands';
 export const RELOAD_COMMANDS = 'reload_commands';
 
 export const SHOW_DIALOG = 'show_dialog';
 export const SHOW_ASK_DIALOG = 'show_ask_dialog';
+export const PROMPT_FILES = 'prompt_files';
 
 export type Channels =
   | 'get_loading_text'
@@ -40,9 +43,12 @@ export type Channels =
   | 'node_exists'
   | 'update_node'
   | 'update_action'
+  | 'update_asset'
   | 'delete_node'
   | 'delete_action'
+  | 'delete_asset'
   | 'list_commands'
   | 'reload_commands'
   | 'show_dialog'
-  | 'show_ask_dialog';
+  | 'show_ask_dialog'
+  | 'prompt_files';
