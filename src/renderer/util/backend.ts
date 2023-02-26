@@ -188,7 +188,7 @@ class Api implements IApi {
   // eslint-disable-next-line class-methods-use-this
   async createAsset(): Promise<string> {
     const assetData = Asset.getEmptyAssetData();
-    return this.updateAsset(null, assetData, false);
+    return this.updateAsset(null, assetData, true);
   }
 
   // eslint-disable-next-line class-methods-use-this
