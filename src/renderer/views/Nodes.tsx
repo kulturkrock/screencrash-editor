@@ -163,7 +163,7 @@ class Nodes extends React.PureComponent<IProps, IState> {
   toggleSelect(name: string, forceSelect = false): void {
     const { onSelect, selectedNode } = this.props;
     const { nodes } = this.state;
-    const newSelection = selectedNode === name && !forceSelect ? '' : name;
+    const newSelection = name; // selectedNode === name && !forceSelect ? '' : name;
     const nodeCandidates = nodes.filter((n) => n.name === newSelection);
     onSelect(nodeCandidates.length > 0 ? nodeCandidates[0] : null);
   }
